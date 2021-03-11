@@ -42,10 +42,7 @@ public class LogUtil
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(delay);
 
-        if (calendar.get(Calendar.SECOND) == 0 && calendar.get(Calendar.MILLISECOND) == 0)
-            System.err.println(MessageFormat.format(logTempStart, log, dateString));
-        else
-            System.err.println(MessageFormat.format(logTemp, log, dateString,
+        System.err.println(MessageFormat.format(logTemp, log, dateString,
                     calendar.get(Calendar.SECOND), calendar.get(Calendar.MILLISECOND)));
     }
 }

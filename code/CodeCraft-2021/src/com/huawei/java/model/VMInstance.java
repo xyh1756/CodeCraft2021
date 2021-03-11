@@ -4,6 +4,7 @@ public class VMInstance {
     private final VM vmType;
     private ServerInstance serverInstance;
     private final int ID;
+    private int Node;
 
     public VMInstance(VM vmType, int id) {
         this.vmType = vmType;
@@ -24,5 +25,13 @@ public class VMInstance {
 
     public int getID() {
         return ID;
+    }
+
+    public int getNode() {
+        return Node;
+    }
+
+    public void setNode(int node) {
+        Node = node;
     }
 }

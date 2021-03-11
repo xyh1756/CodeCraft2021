@@ -32,8 +32,8 @@ public class FileUtil {
         try {
             FileReader fb = new FileReader(file);
             BufferedReader br = new BufferedReader(fb);
-            String line = null;
-            String[] information = null;
+            String line;
+            String[] information;
             serverNumber = Integer.parseInt(br.readLine());
             for (int i = 0; i < serverNumber; i++) {
                 line = br.readLine();

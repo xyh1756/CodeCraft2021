@@ -32,10 +32,25 @@ public class ServerInstance {
 
     public void addVmInstance(VMInstance vmInstance) {
         this.vmInstances.add(vmInstance);
+        this.running = true;
     }
 
     public boolean delVmInstance(VMInstance vmInstance) {
-        return this.vmInstances.remove(vmInstance);
+        if (this.vmInstances.remove(vmInstance)) {
+            if (vmInstance.getVmType().isDual()) {
+                this.ALeftCore += vmInstance.getVmType().getCore() / 2;
+                this.ALeftMemory += vmInstance.getVmType().getMemory() / 2;
+                this.BLeftCore += vmInstance.getVmType().getCore() / 2;
+                this.BLeftMemory += vmInstance.getVmType().getMemory() / 2;
+            } else if (vmInstance.getNode() == 0) {
+                this.ALeftCore += vmInstance.getVmType().getCore();
+                this.ALeftMemory += vmInstance.getVmType().getMemory();
+            } else {
+                this.BLeftCore += vmInstance.getVmType().getCore();
+                this.BLeftMemory += vmInstance.getVmType().getMemory();
+            }
+            return true;
+        } else return false;
     }
 
     public Server getServerType() {
