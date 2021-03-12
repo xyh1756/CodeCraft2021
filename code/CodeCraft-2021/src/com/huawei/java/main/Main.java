@@ -4,12 +4,10 @@ import com.huawei.java.model.Server;
 import com.huawei.java.model.ServerInstance;
 import com.huawei.java.model.VM;
 import com.huawei.java.model.VMInstance;
-import com.huawei.java.operation.BuyServerOperation;
-import com.huawei.java.operation.DistributeServerOperation;
-import com.huawei.java.operation.Operation;
-import com.huawei.java.operation.VMOperation;
+import com.huawei.java.operation.*;
 import com.huawei.java.utils.FileUtil;
-import com.huawei.java.utils.LogUtil;
+import com.huawei.java.utils.JudgeUtil;
+import com.huawei.java.utils.OutputUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,23 +17,24 @@ import java.util.Map;
 public class Main {
     public static void main(String[] args) {
         // 加载输入数据
-        LogUtil.printLog("开始加载输入");
         FileUtil file = new FileUtil("code/CodeCraft-2021/data/training-1.txt");
-        Map<String, Server> servers = file.getServers();
         List<Server> serverList = file.getServerList();
         Map<String, VM> vms = file.getVms();
         List<List<Operation>> VMOperations = file.getOperations();
-        LogUtil.printLog("加载输入完成");
 
         // 执行虚拟机创建、删除操作
-        LogUtil.printLog("开始执行虚拟机创建、删除操作");
         Collections.sort(serverList);
         List<ServerInstance> serverInstanceList = new ArrayList<>();
         List<VMInstance> vmInstanceList = new ArrayList<>();
         List<List<Operation>> serverOperations = new ArrayList<>();
+        List<List<Operation>> buyServerOperations = new ArrayList<>();
+        List<List<Operation>> distributeServerOperation = new ArrayList<>();
+        List<List<Operation>> deleteVMOperation = new ArrayList<>();
+        int buyServerAmount = 0;
 
         for (List<Operation> vmOperationsDaily : VMOperations) {
             List<Operation> serverOperationsDaily = new ArrayList<>();
+            List<Operation> deleteVMOperationsDaily = new ArrayList<>();
             for (Operation operation : vmOperationsDaily) {
                 VMOperation vmoperation = (VMOperation) operation;
                 // 建立虚拟机
@@ -61,8 +60,8 @@ public class Main {
                             for (Server server : serverList) {
                                 if (server.isEnoughDual(vmNeeded.getCore(), vmNeeded.getMemory())) {
                                     ServerInstance serverInstance = new ServerInstance(server);
-                                    serverInstanceList.add(serverInstance);
                                     serverInstance.distributeDual(vmNeeded.getCore(), vmNeeded.getMemory());
+                                    serverInstanceList.add(serverInstance);
                                     VMInstance vmInstance = new VMInstance(vmNeeded, vmoperation.ID);
                                     serverInstance.addVmInstance(vmInstance);
                                     vmInstance.setServerInstance(serverInstance);
@@ -103,8 +102,8 @@ public class Main {
                             for (Server server : serverList) {
                                 if (server.isEnough(vmNeeded.getCore(), vmNeeded.getMemory())) {
                                     ServerInstance serverInstance = new ServerInstance(server);
-                                    serverInstanceList.add(serverInstance);
                                     serverInstance.distributeA(vmNeeded.getCore(), vmNeeded.getMemory());
+                                    serverInstanceList.add(serverInstance);
                                     VMInstance vmInstance = new VMInstance(vmNeeded, vmoperation.ID);
                                     serverInstance.addVmInstance(vmInstance);
                                     vmInstance.setServerInstance(serverInstance);
@@ -124,10 +123,12 @@ public class Main {
                     for (ServerInstance serverInstance : serverInstanceList) {
                         for (VMInstance vmInstance : serverInstance.getVmInstances()) {
                             if (vmInstance.getID() == vmoperation.ID) {
-                                serverInstance.delVmInstance(vmInstance);
-                                vmInstanceList.remove(vmInstance);
-                                deleted = true;
-                                break;
+                                if (serverInstance.delVmInstance(vmInstance)) {
+                                    vmInstanceList.remove(vmInstance);
+                                    deleteVMOperationsDaily.add(new DeleteVMOperation(vmInstance.getID()));
+                                    deleted = true;
+                                    break;
+                                }
                             }
                         }
                         if (deleted) break;
@@ -136,6 +137,7 @@ public class Main {
             }
             // 整理serverOperationsDaily，分配ID
             List<Operation> buyServerOperationsDaily = new ArrayList<>();
+            List<Operation> distributeServerOperationDaily = new ArrayList<>();
             List<Operation> buyServerOperationsGeneralize = new ArrayList<>();
             for (Operation serverOperation : serverOperationsDaily) {
                 if (serverOperation instanceof BuyServerOperation) {
@@ -143,7 +145,7 @@ public class Main {
                     boolean added = false;
                     for (Operation operation : buyServerOperationsGeneralize) {
                         BuyServerOperation buyServerOperation = (BuyServerOperation) operation;
-                        if (buyServerOperation.ServerType == ((BuyServerOperation) serverOperation).ServerType) {
+                        if (buyServerOperation.ServerType.getType().equals(((BuyServerOperation) serverOperation).ServerType.getType())) {
                             buyServerOperation.number += 1;
                             added = true;
                             break;
@@ -152,23 +154,29 @@ public class Main {
                     if (!added) {
                         buyServerOperationsGeneralize.add(new BuyServerOperation(((BuyServerOperation) serverOperation).ServerType, 1, null));
                     }
+                } else {
+                    distributeServerOperationDaily.add(serverOperation);
                 }
             }
             // 递增分配服务器实例ID
-            int buyServerTotalAmount = 0;
             for (Operation buyServerOperationOne : buyServerOperationsGeneralize) {
                 for (Operation serverOperation : serverOperationsDaily) {
                     if (serverOperation instanceof BuyServerOperation && ((BuyServerOperation) buyServerOperationOne).ServerType == ((BuyServerOperation) serverOperation).ServerType) {
-                        ((BuyServerOperation) serverOperation).serverInstance.setID(buyServerTotalAmount);
-                        buyServerTotalAmount++;
+                        ((BuyServerOperation) serverOperation).serverInstance.setID(buyServerAmount);
+                        buyServerAmount++;
                     }
                 }
             }
             serverOperations.add(serverOperationsDaily);
+            buyServerOperations.add(buyServerOperationsGeneralize);
+            distributeServerOperation.add(distributeServerOperationDaily);
+            deleteVMOperation.add(deleteVMOperationsDaily);
         }
-        LogUtil.printLog("执行虚拟机创建、删除操作完成");
-        // TODO: write standard output
-
-        // TODO: System.out.flush()
+        // 输出结果
+        OutputUtil outputUtil = new OutputUtil(buyServerOperations, distributeServerOperation);
+        outputUtil.OutPut();
+        System.out.flush();
+//        JudgeUtil judgeUtil = new JudgeUtil("code/CodeCraft-2021/data/output.txt", file.getServers(), vms, VMOperations);
+//        judgeUtil.Judge();
     }
 }

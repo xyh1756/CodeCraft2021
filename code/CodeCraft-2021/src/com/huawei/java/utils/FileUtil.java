@@ -5,14 +5,8 @@ import com.huawei.java.model.VM;
 import com.huawei.java.operation.Operation;
 import com.huawei.java.operation.VMOperation;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 public class FileUtil {
     public int serverNumber;
@@ -24,19 +18,19 @@ public class FileUtil {
     public List<List<Operation>> operations;
 
     public FileUtil(String filePath) {
-        File file = new File(filePath);
         servers = new HashMap<>();
         serverList = new ArrayList<>();
         vms = new HashMap<>();
         operations = new ArrayList<>();
         try {
-            FileReader fb = new FileReader(file);
-            BufferedReader br = new BufferedReader(fb);
+//            FileInputStream fileInputStream = new FileInputStream(filePath);
+//            System.setIn(fileInputStream);
+            Scanner scanner = new Scanner(System.in);
             String line;
             String[] information;
-            serverNumber = Integer.parseInt(br.readLine());
+            serverNumber = Integer.parseInt(scanner.nextLine());
             for (int i = 0; i < serverNumber; i++) {
-                line = br.readLine();
+                line = scanner.nextLine();
                 information = line.substring(1, line.length() - 1).split(",");
                 servers.put(information[0], new Server(information[0], Integer.parseInt(information[1].trim()),
                         Integer.parseInt(information[2].trim()), Integer.parseInt(information[3].trim()),
@@ -45,19 +39,19 @@ public class FileUtil {
                         Integer.parseInt(information[2].trim()), Integer.parseInt(information[3].trim()),
                         Integer.parseInt(information[4].trim())));
             }
-            vmNumber = Integer.parseInt(br.readLine());
+            vmNumber = Integer.parseInt(scanner.nextLine());
             for (int i = 0; i < vmNumber; i++) {
-                line = br.readLine();
+                line = scanner.nextLine();
                 information = line.substring(1, line.length() - 1).split(",");
                 vms.put(information[0], new VM(information[0], Integer.parseInt(information[1].trim()),
                         Integer.parseInt(information[2].trim()), information[3].trim().equals("1")));
             }
-            days = Integer.parseInt(br.readLine());
+            days = Integer.parseInt(scanner.nextLine());
             for (int i = 0; i < days; i++) {
-                int orders = Integer.parseInt(br.readLine());
+                int orders = Integer.parseInt(scanner.nextLine());
                 List<Operation> operations_daily = new ArrayList<>();
                 for (int j = 0; j < orders; j++) {
-                    line = br.readLine();
+                    line = scanner.nextLine();
                     information = line.substring(1, line.length() - 1).split(",");
                     if (information[0].equals("add"))
                         operations_daily.add(new VMOperation(information[0], information[1].trim(),
@@ -68,7 +62,7 @@ public class FileUtil {
                 }
                 operations.add(operations_daily);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

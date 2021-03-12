@@ -1,1 +1,13 @@
 com/huawei/java/main/Main.java
+com/huawei/java/model/Server.java
+com/huawei/java/model/ServerInstance.java
+com/huawei/java/model/VM.java
+com/huawei/java/model/VMInstance.java
+com/huawei/java/operation/BuyServerOperation.java
+com/huawei/java/operation/DistributeServerOperation.java
+com/huawei/java/operation/MigrateServerOperation.java
+com/huawei/java/operation/Operation.java
+com/huawei/java/operation/VMOperation.java
+com/huawei/java/utils/FileUtil.java
+com/huawei/java/utils/LogUtil.java
+com/huawei/java/utils/OutputUtil.java
