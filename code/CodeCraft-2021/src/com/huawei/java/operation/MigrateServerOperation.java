@@ -1,18 +1,15 @@
 package com.huawei.java.operation;
 
-import com.huawei.java.model.ServerInstance;
-import com.huawei.java.model.VMInstance;
-
 public class MigrateServerOperation implements Operation{
-    public final VMInstance vmInstance;
-    public final ServerInstance serverInstancePre;
-    public final ServerInstance serverInstance;
+    public final int vmID;
+    public final int serverInstancePreID;
+    public final int serverInstanceID;
     public final int Node;
 
-    public MigrateServerOperation(VMInstance vmInstance, ServerInstance serverInstancePre, ServerInstance serverInstance, int node) {
-        this.vmInstance = vmInstance;
-        this.serverInstancePre = serverInstancePre;
-        this.serverInstance = serverInstance;
+    public MigrateServerOperation(int vmID, int serverInstancePreID, int serverInstanceID, int node) {
+        this.vmID = vmID;
+        this.serverInstancePreID = serverInstancePreID;
+        this.serverInstanceID = serverInstanceID;
         Node = node;
     }
 }

@@ -70,7 +70,7 @@ public class JudgeUtil {
                         serverInstanceID = Integer.parseInt(information[1].trim());
                         Node = 2;
                     }
-                    int serverInstancePreID = ((MigrateServerOperation) migrateServerOperations.get(i).get(j)).serverInstancePre.getID();
+                    int serverInstancePreID = ((MigrateServerOperation) migrateServerOperations.get(i).get(j)).serverInstancePreID;
                     VMInstance vmInstance = null;
                     ServerInstance serverInstance = null;
                     ServerInstance serverInstancePre = null;

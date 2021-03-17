@@ -39,42 +39,42 @@ public class Main {
             List<ServerInstance> serverInstanceListPriority = new ArrayList<>(serverInstanceList);
             Collections.sort(serverInstanceListPriority);
 
-            // Todo: 迁移虚拟机，目前有bug在调试
-//            int migrateAmount = 0;
-//            int migrateAmountLimit = serverInstanceList.size() / 200;
-//            for (int i = 0; i < serverInstanceListPriority.size() / 20 && migrateAmount < migrateAmountLimit; i++) {
-//                List<VMInstance> vmInstancesToMigrate = new ArrayList<>(serverInstanceListPriority.get(i).getVmInstances());
-//                for (VMInstance vmInstance : vmInstancesToMigrate) {
-//                    for (int j = serverInstanceListPriority.size() - 1; j > serverInstanceListPriority.size() * 19 / 20 && migrateAmount < migrateAmountLimit; j--) {
-//                        if (vmInstance.getNode() == 2) {
-//                            if (serverInstanceListPriority.get(j).distributeDual(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
-//                                serverInstanceListPriority.get(j).addVmInstance(vmInstance);
-//                                vmInstance.setServerInstance(serverInstanceListPriority.get(j));
-//                                migrateServerOperationsDaily.add(new MigrateServerOperation(vmInstance, serverInstanceListPriority.get(i), serverInstanceListPriority.get(j), 2));
-//                                serverInstanceListPriority.get(i).delVmInstance(vmInstance);
-//                                migrateAmount++;
-//                                break;
-//                            }
-//                        } else if (serverInstanceListPriority.get(j).distributeA(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
-//                            serverInstanceListPriority.get(j).addVmInstance(vmInstance);
-//                            vmInstance.setServerInstance(serverInstanceListPriority.get(j));
-//                            vmInstance.setNode(0);
-//                            migrateServerOperationsDaily.add(new MigrateServerOperation(vmInstance, serverInstanceListPriority.get(i), serverInstanceListPriority.get(j), 0));
-//                            serverInstanceListPriority.get(i).delVmInstance(vmInstance);
-//                            migrateAmount++;
-//                            break;
-//                        } else if (serverInstanceListPriority.get(j).distributeB(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
-//                            serverInstanceListPriority.get(j).addVmInstance(vmInstance);
-//                            vmInstance.setServerInstance(serverInstanceListPriority.get(j));
-//                            vmInstance.setNode(1);
-//                            migrateServerOperationsDaily.add(new MigrateServerOperation(vmInstance, serverInstanceListPriority.get(i), serverInstanceListPriority.get(j), 1));
-//                            serverInstanceListPriority.get(i).delVmInstance(vmInstance);
-//                            migrateAmount++;
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
+            // 迁移虚拟机
+            int migrateAmount = 0;
+            int migrateAmountLimit = serverInstanceList.size() / 200;
+            for (int i = 0; migrateAmount < migrateAmountLimit && i < serverInstanceListPriority.size() / 4; i++) {
+                List<VMInstance> vmInstancesToMigrate = new ArrayList<>(serverInstanceListPriority.get(i).getVmInstances());
+                for (VMInstance vmInstance : vmInstancesToMigrate) {
+                    for (int j = serverInstanceListPriority.size() - 1; migrateAmount < migrateAmountLimit && j > serverInstanceListPriority.size() * 3 / 4; j--) {
+                        if (vmInstance.getNode() == 2) {
+                            if (serverInstanceListPriority.get(j).distributeDual(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
+                                serverInstanceListPriority.get(j).addVmInstance(vmInstance);
+                                vmInstance.setServerInstance(serverInstanceListPriority.get(j));
+                                migrateServerOperationsDaily.add(new MigrateServerOperation(vmInstance.getID(), serverInstanceListPriority.get(i).getID(), serverInstanceListPriority.get(j).getID(), 2));
+                                serverInstanceListPriority.get(i).delVmInstance(vmInstance);
+                                migrateAmount++;
+                                break;
+                            }
+                        } else if (serverInstanceListPriority.get(j).distributeA(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
+                            serverInstanceListPriority.get(j).addVmInstance(vmInstance);
+                            vmInstance.setServerInstance(serverInstanceListPriority.get(j));
+                            migrateServerOperationsDaily.add(new MigrateServerOperation(vmInstance.getID(), serverInstanceListPriority.get(i).getID(), serverInstanceListPriority.get(j).getID(), 0));
+                            serverInstanceListPriority.get(i).delVmInstance(vmInstance);
+                            vmInstance.setNode(0);
+                            migrateAmount++;
+                            break;
+                        } else if (serverInstanceListPriority.get(j).distributeB(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
+                            serverInstanceListPriority.get(j).addVmInstance(vmInstance);
+                            vmInstance.setServerInstance(serverInstanceListPriority.get(j));
+                            migrateServerOperationsDaily.add(new MigrateServerOperation(vmInstance.getID(), serverInstanceListPriority.get(i).getID(), serverInstanceListPriority.get(j).getID(), 1));
+                            serverInstanceListPriority.get(i).delVmInstance(vmInstance);
+                            vmInstance.setNode(1);
+                            migrateAmount++;
+                            break;
+                        }
+                    }
+                }
+            }
 
             for (Operation operation : vmOperationsDaily) {
                 VMOperation vmoperation = (VMOperation) operation;
@@ -216,8 +216,13 @@ public class Main {
             deleteVMOperations.add(deleteVMOperationsDaily);
         }
         // 输出结果
-        OutputUtil outputUtil = new OutputUtil(buyServerOperations, distributeServerOperations, migrateServerOperations);
-        outputUtil.OutPut();
+        try {
+            OutputUtil outputUtil = new OutputUtil(buyServerOperations, distributeServerOperations, migrateServerOperations);
+            outputUtil.OutPut();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         System.out.flush();
 //        JudgeUtil judgeUtil = new JudgeUtil("code/CodeCraft-2021/data/output.txt", file.getServers(), vms, VMOperations, migrateServerOperations);
 //        judgeUtil.Judge();
