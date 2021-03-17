@@ -1,9 +1,11 @@
 package com.huawei.java.model;
 
+import com.huawei.java.main.Main;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerInstance {
+public class ServerInstance implements Comparable<ServerInstance>{
     private final Server serverType;
     private int ID;
     private boolean running;
@@ -132,5 +134,12 @@ public class ServerInstance {
             return true;
         } else
             return false;
+    }
+
+    @Override
+    public int compareTo(ServerInstance o) {
+        return this.vmInstances.size() - o.vmInstances.size();
+//        return this.ALeftCore + this.BLeftCore + this.ALeftMemory + this.BLeftMemory - (o.ALeftCore + o.ALeftMemory + o.BLeftCore + o.BLeftMemory);
+//        return -(this.ALeftCore + this.BLeftCore + this.ALeftMemory + this.BLeftMemory) + (o.ALeftCore + o.ALeftMemory + o.BLeftCore + o.BLeftMemory);
     }
 }

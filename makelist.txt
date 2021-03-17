@@ -8,6 +8,8 @@ com/huawei/java/operation/DistributeServerOperation.java
 com/huawei/java/operation/MigrateServerOperation.java
 com/huawei/java/operation/Operation.java
 com/huawei/java/operation/VMOperation.java
+com/huawei/java/operation/DeleteVMOperation.java
 com/huawei/java/utils/FileUtil.java
 com/huawei/java/utils/LogUtil.java
 com/huawei/java/utils/OutputUtil.java
+com/huawei/java/utils/JudgeUtil.java
