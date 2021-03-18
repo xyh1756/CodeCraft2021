@@ -12,11 +12,11 @@ import java.io.PrintStream;
 import java.util.List;
 
 public class OutputUtil {
-    public final List<List<Operation>> buyServerOperations;
-    public final List<List<Operation>> distributeServerOperations;
+    public final List<List<BuyServerOperation>> buyServerOperations;
+    public final List<List<DistributeServerOperation>> distributeServerOperations;
     public final List<List<Operation>> migrateServerOperations;
 
-    public OutputUtil(List<List<Operation>> buyServerOperations, List<List<Operation>> distributeServerOperations, List<List<Operation>> migrateServerOperations) {
+    public OutputUtil(List<List<BuyServerOperation>> buyServerOperations, List<List<DistributeServerOperation>> distributeServerOperations, List<List<Operation>> migrateServerOperations) {
         this.buyServerOperations = buyServerOperations;
         this.distributeServerOperations = distributeServerOperations;
         this.migrateServerOperations = migrateServerOperations;
@@ -27,8 +27,7 @@ public class OutputUtil {
 //        System.setOut(ps);
         for (int i = 0; i < buyServerOperations.size(); i++) {
             System.out.printf("(purchase, %d)\n", buyServerOperations.get(i).size());
-            for (Operation serverOperation : buyServerOperations.get(i)) {
-                BuyServerOperation buyServerOperation = (BuyServerOperation) serverOperation;
+            for (BuyServerOperation buyServerOperation : buyServerOperations.get(i)) {
                 System.out.printf("(%s, %d)\n", buyServerOperation.ServerType.getType(), buyServerOperation.number);
             }
             System.out.printf("(migration, %d)\n", migrateServerOperations.get(i).size());
@@ -41,8 +40,7 @@ public class OutputUtil {
                 else
                     System.out.printf("(%d, %d)\n", migrateServerOperation.vmID, migrateServerOperation.serverInstanceID);
             }
-            for (Operation serverOperation : distributeServerOperations.get(i)) {
-                DistributeServerOperation distributeServerOperation = (DistributeServerOperation) serverOperation;
+            for (DistributeServerOperation distributeServerOperation : distributeServerOperations.get(i)) {
                 if (distributeServerOperation.Node == 0)
                     System.out.printf("(%d, %s)\n", distributeServerOperation.serverInstance.getID(), "A");
                 else if (distributeServerOperation.Node == 1)
