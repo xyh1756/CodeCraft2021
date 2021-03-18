@@ -9,10 +9,7 @@ import com.huawei.java.utils.FileUtil;
 import com.huawei.java.utils.JudgeUtil;
 import com.huawei.java.utils.OutputUtil;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -37,41 +34,50 @@ public class Main {
             List<Operation> serverOperationsDaily = new ArrayList<>();
             List<Operation> deleteVMOperationsDaily = new ArrayList<>();
             List<Operation> migrateServerOperationsDaily = new ArrayList<>();
-            List<ServerInstance> serverInstanceListPriority = new ArrayList<>(serverInstanceList);
-            Collections.sort(serverInstanceListPriority);
+            List<ServerInstance> serverInstanceListVMPriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余虚拟机占用资源升序
+            List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余资源升序
+            Collections.sort(serverInstanceListVMPriority);
+            serverInstanceListResourcePriority.sort(new Comparator<ServerInstance>() {
+                @Override
+                public int compare(ServerInstance o1, ServerInstance o2) {
+                    return o1.getALeftCore() + o1.getALeftMemory() + o1.getBLeftCore() + o1.getBLeftMemory()
+                            - o2.getALeftCore() - o2.getALeftMemory() - o2.getBLeftCore() - o2.getBLeftMemory();
+                }
+            });
 
             // 迁移虚拟机
             int migrateAmount = 0;
-            int migrateAmountLimit = serverInstanceList.size() / 200;
-            for (int i = 0; migrateAmount < migrateAmountLimit && i < serverInstanceListPriority.size() / 4; i++) {
-                List<VMInstance> vmInstancesToMigrate = new ArrayList<>(serverInstanceListPriority.get(i).getVmInstances());
+            int migrateAmountLimit = vmInstanceList.size() / 200;
+            for (int i = 0; migrateAmount < migrateAmountLimit && i < serverInstanceListVMPriority.size() / 4; i++) {
+                List<VMInstance> vmInstancesToMigrate = new ArrayList<>(serverInstanceListVMPriority.get(i).getVmInstances());
                 for (VMInstance vmInstance : vmInstancesToMigrate) {
                     boolean migrated = false;
-                    for (int j = serverInstanceListPriority.size() - 1; migrateAmount < migrateAmountLimit && j > serverInstanceListPriority.size() * 1 / 2; j--) {
+                    for (int j = 0; migrateAmount < migrateAmountLimit && j < serverInstanceListResourcePriority.size(); j++) {
+                        if (serverInstanceListVMPriority.get(i) == serverInstanceListResourcePriority.get(j)) continue;
                         if (vmInstance.getNode() == 2) {
-                            if (serverInstanceListPriority.get(j).distributeDual(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
-                                serverInstanceListPriority.get(j).addVmInstance(vmInstance);
-                                vmInstance.setServerInstance(serverInstanceListPriority.get(j));
-                                migrateServerOperationsDaily.add(new MigrateServerOperation(vmInstance.getID(), serverInstanceListPriority.get(i).getID(), serverInstanceListPriority.get(j).getID(), 2));
-                                serverInstanceListPriority.get(i).delVmInstance(vmInstance);
+                            if (serverInstanceListResourcePriority.get(j).distributeDual(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
+                                serverInstanceListResourcePriority.get(j).addVmInstance(vmInstance);
+                                vmInstance.setServerInstance(serverInstanceListResourcePriority.get(j));
+                                migrateServerOperationsDaily.add(new MigrateServerOperation(vmInstance.getID(), serverInstanceListVMPriority.get(i).getID(), serverInstanceListResourcePriority.get(j).getID(), 2));
+                                serverInstanceListVMPriority.get(i).delVmInstance(vmInstance);
                                 migrateAmount++;
                                 migrated = true;
                                 break;
                             }
-                        } else if (serverInstanceListPriority.get(j).distributeA(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
-                            serverInstanceListPriority.get(j).addVmInstance(vmInstance);
-                            vmInstance.setServerInstance(serverInstanceListPriority.get(j));
-                            migrateServerOperationsDaily.add(new MigrateServerOperation(vmInstance.getID(), serverInstanceListPriority.get(i).getID(), serverInstanceListPriority.get(j).getID(), 0));
-                            serverInstanceListPriority.get(i).delVmInstance(vmInstance);
+                        } else if (serverInstanceListResourcePriority.get(j).distributeA(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
+                            serverInstanceListResourcePriority.get(j).addVmInstance(vmInstance);
+                            vmInstance.setServerInstance(serverInstanceListResourcePriority.get(j));
+                            migrateServerOperationsDaily.add(new MigrateServerOperation(vmInstance.getID(), serverInstanceListVMPriority.get(i).getID(), serverInstanceListResourcePriority.get(j).getID(), 0));
+                            serverInstanceListVMPriority.get(i).delVmInstance(vmInstance);
                             vmInstance.setNode(0);
                             migrateAmount++;
                             migrated = true;
                             break;
-                        } else if (serverInstanceListPriority.get(j).distributeB(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
-                            serverInstanceListPriority.get(j).addVmInstance(vmInstance);
-                            vmInstance.setServerInstance(serverInstanceListPriority.get(j));
-                            migrateServerOperationsDaily.add(new MigrateServerOperation(vmInstance.getID(), serverInstanceListPriority.get(i).getID(), serverInstanceListPriority.get(j).getID(), 1));
-                            serverInstanceListPriority.get(i).delVmInstance(vmInstance);
+                        } else if (serverInstanceListResourcePriority.get(j).distributeB(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
+                            serverInstanceListResourcePriority.get(j).addVmInstance(vmInstance);
+                            vmInstance.setServerInstance(serverInstanceListResourcePriority.get(j));
+                            migrateServerOperationsDaily.add(new MigrateServerOperation(vmInstance.getID(), serverInstanceListVMPriority.get(i).getID(), serverInstanceListResourcePriority.get(j).getID(), 1));
+                            serverInstanceListVMPriority.get(i).delVmInstance(vmInstance);
                             vmInstance.setNode(1);
                             migrateAmount++;
                             migrated = true;
