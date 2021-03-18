@@ -126,11 +126,12 @@ public class ServerInstance implements Comparable<ServerInstance>{
     }
 
     public boolean distributeDual(int core, int memory) {
-        if (ALeftCore >= core / 2 && ALeftMemory >= memory / 2 && BLeftCore >= core / 2 && BLeftMemory >= memory / 2) {
-            ALeftCore -= core / 2;
-            ALeftMemory -= memory / 2;
-            BLeftCore -= core / 2;
-            BLeftMemory -= memory / 2;
+        int dualCore = core / 2, dualMemory = memory / 2;
+        if (ALeftCore >= dualCore && ALeftMemory >= dualMemory && BLeftCore >= dualCore && BLeftMemory >= dualMemory) {
+            ALeftCore -= dualCore;
+            ALeftMemory -= dualMemory;
+            BLeftCore -= dualCore;
+            BLeftMemory -= dualMemory;
             return true;
         } else
             return false;
@@ -138,8 +139,13 @@ public class ServerInstance implements Comparable<ServerInstance>{
 
     @Override
     public int compareTo(ServerInstance o) {
-        return this.vmInstances.size() - o.vmInstances.size();
-//        return this.ALeftCore + this.BLeftCore + this.ALeftMemory + this.BLeftMemory - (o.ALeftCore + o.ALeftMemory + o.BLeftCore + o.BLeftMemory);
-//        return -(this.ALeftCore + this.BLeftCore + this.ALeftMemory + this.BLeftMemory) + (o.ALeftCore + o.ALeftMemory + o.BLeftCore + o.BLeftMemory);
+        int resource1 = 0, resource2 = 0;
+        for (VMInstance vmInstance : this.vmInstances) {
+            resource1 += vmInstance.getVmType().getCore() + vmInstance.getVmType().getMemory();
+        }
+        for (VMInstance vmInstance : o.vmInstances) {
+            resource2 += vmInstance.getVmType().getCore() + vmInstance.getVmType().getMemory();
+        }
+        return resource1 - resource2;
     }
 }

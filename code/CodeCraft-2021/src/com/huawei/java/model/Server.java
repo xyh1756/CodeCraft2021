@@ -48,6 +48,6 @@ public class Server implements Comparable<Server>{
 
     @Override
     public int compareTo(Server o) {
-        return this.hardwareCost + 400 * this.energyCost - o.hardwareCost - 400 * o.energyCost;
+        return this.hardwareCost - o.hardwareCost;
     }
 }

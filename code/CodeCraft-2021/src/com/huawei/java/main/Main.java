@@ -16,6 +16,7 @@ import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
+        long startTime=System.currentTimeMillis();
         // 加载输入数据
         FileUtil file = new FileUtil("code/CodeCraft-2021/data/training-1.txt");
         List<Server> serverList = file.getServerList();
@@ -45,7 +46,8 @@ public class Main {
             for (int i = 0; migrateAmount < migrateAmountLimit && i < serverInstanceListPriority.size() / 4; i++) {
                 List<VMInstance> vmInstancesToMigrate = new ArrayList<>(serverInstanceListPriority.get(i).getVmInstances());
                 for (VMInstance vmInstance : vmInstancesToMigrate) {
-                    for (int j = serverInstanceListPriority.size() - 1; migrateAmount < migrateAmountLimit && j > serverInstanceListPriority.size() * 3 / 4; j--) {
+                    boolean migrated = false;
+                    for (int j = serverInstanceListPriority.size() - 1; migrateAmount < migrateAmountLimit && j > serverInstanceListPriority.size() * 1 / 2; j--) {
                         if (vmInstance.getNode() == 2) {
                             if (serverInstanceListPriority.get(j).distributeDual(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
                                 serverInstanceListPriority.get(j).addVmInstance(vmInstance);
@@ -53,6 +55,7 @@ public class Main {
                                 migrateServerOperationsDaily.add(new MigrateServerOperation(vmInstance.getID(), serverInstanceListPriority.get(i).getID(), serverInstanceListPriority.get(j).getID(), 2));
                                 serverInstanceListPriority.get(i).delVmInstance(vmInstance);
                                 migrateAmount++;
+                                migrated = true;
                                 break;
                             }
                         } else if (serverInstanceListPriority.get(j).distributeA(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
@@ -62,6 +65,7 @@ public class Main {
                             serverInstanceListPriority.get(i).delVmInstance(vmInstance);
                             vmInstance.setNode(0);
                             migrateAmount++;
+                            migrated = true;
                             break;
                         } else if (serverInstanceListPriority.get(j).distributeB(vmInstance.getVmType().getCore(), vmInstance.getVmType().getMemory())) {
                             serverInstanceListPriority.get(j).addVmInstance(vmInstance);
@@ -70,9 +74,11 @@ public class Main {
                             serverInstanceListPriority.get(i).delVmInstance(vmInstance);
                             vmInstance.setNode(1);
                             migrateAmount++;
+                            migrated = true;
                             break;
                         }
                     }
+                    if (!migrated) break;
                 }
             }
 
@@ -226,5 +232,7 @@ public class Main {
         System.out.flush();
 //        JudgeUtil judgeUtil = new JudgeUtil("code/CodeCraft-2021/data/output.txt", file.getServers(), vms, VMOperations, migrateServerOperations);
 //        judgeUtil.Judge();
+        long endTime=System.currentTimeMillis(); //获取结束时间
+//        System.out.println("程序运行时间： "+(endTime-startTime)+"ms");
     }
 }
