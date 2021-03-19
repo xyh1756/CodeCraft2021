@@ -82,11 +82,16 @@ public class Main {
                 }
             }
 
-            Collections.shuffle(serverInstanceList);
             for (Operation operation : vmOperationsDaily) {
                 VMOperation vmoperation = (VMOperation) operation;
+
                 // 建立虚拟机
                 if (vmoperation.type.equals("add")) {
+
+                    // 每个建立虚拟机操作之前排序
+                    serverInstanceList.sort((o1, o2) -> o1.getALeftCore() + o1.getALeftMemory() + o1.getBLeftCore() + o1.getBLeftMemory()
+                            - o2.getALeftCore() - o2.getALeftMemory() - o2.getBLeftCore() - o2.getBLeftMemory());
+
                     boolean distributed = false;
                     VM vmNeeded = vms.get(vmoperation.VMType);
                     // 双节点虚拟机
@@ -106,7 +111,9 @@ public class Main {
                         // 当前服务器资源不足，购买新服务器
                         if (!distributed) {
                             for (Server server : serverList) {
-                                if (server.isEnoughDual(vmNeeded.getCore(), vmNeeded.getMemory())) {
+                                if (vmNeeded.getCore() - vmNeeded.getMemory() >= 55 && server.isEnoughDual(vmNeeded.getCore() + 25, vmNeeded.getMemory()) ||
+                                        vmNeeded.getMemory() - vmNeeded.getCore() >= 55 && server.isEnoughDual(vmNeeded.getCore(), vmNeeded.getMemory() + 25) ||
+                                        Math.abs(vmNeeded.getCore() - vmNeeded.getMemory()) < 55 && server.isEnoughDual(vmNeeded.getCore(), vmNeeded.getMemory())) {
                                     ServerInstance serverInstance = new ServerInstance(server);
                                     serverInstance.distributeDual(vmNeeded.getCore(), vmNeeded.getMemory());
                                     serverInstanceList.add(serverInstance);
@@ -125,7 +132,8 @@ public class Main {
                     // 单节点虚拟机
                     else {
                         for (ServerInstance serverInstance : serverInstanceList) {
-                            if (serverInstance.distributeA(vmNeeded.getCore(), vmNeeded.getMemory())) {
+                            if (!(serverInstance.getALeftCore() - vmNeeded.getCore() > 80 && serverInstance.getALeftMemory() - vmNeeded.getMemory() <= 10) &&
+                                    serverInstance.distributeA(vmNeeded.getCore(), vmNeeded.getMemory())) {
                                 VMInstance vmInstance = new VMInstance(vmNeeded, vmoperation.ID);
                                 serverInstance.addVmInstance(vmInstance);
                                 vmInstance.setServerInstance(serverInstance);
@@ -145,10 +153,35 @@ public class Main {
                                 break;
                             }
                         }
+                        if (!distributed) {
+                            for (ServerInstance serverInstance : serverInstanceList) {
+                                if (serverInstance.distributeA(vmNeeded.getCore(), vmNeeded.getMemory())) {
+                                    VMInstance vmInstance = new VMInstance(vmNeeded, vmoperation.ID);
+                                    serverInstance.addVmInstance(vmInstance);
+                                    vmInstance.setServerInstance(serverInstance);
+                                    vmInstance.setNode(0);
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 0));
+                                    vmInstanceList.add(vmInstance);
+                                    distributed = true;
+                                    break;
+                                } else if (serverInstance.distributeB(vmNeeded.getCore(), vmNeeded.getMemory())) {
+                                    VMInstance vmInstance = new VMInstance(vmNeeded, vmoperation.ID);
+                                    serverInstance.addVmInstance(vmInstance);
+                                    vmInstance.setServerInstance(serverInstance);
+                                    vmInstance.setNode(1);
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 1));
+                                    vmInstanceList.add(vmInstance);
+                                    distributed = true;
+                                    break;
+                                }
+                            }
+                        }
                         // 当前服务器资源不足，购买新服务器
                         if (!distributed) {
                             for (Server server : serverList) {
-                                if (server.isEnough(vmNeeded.getCore(), vmNeeded.getMemory())) {
+                                if (vmNeeded.getCore() - vmNeeded.getMemory() >= 50 && server.isEnough(vmNeeded.getCore() + 10, vmNeeded.getMemory()) ||
+                                        vmNeeded.getMemory() - vmNeeded.getCore() >= 50 && server.isEnough(vmNeeded.getCore(), vmNeeded.getMemory() + 10) ||
+                                        Math.abs(vmNeeded.getCore() - vmNeeded.getMemory()) < 50 && server.isEnough(vmNeeded.getCore(), vmNeeded.getMemory())) {
                                     ServerInstance serverInstance = new ServerInstance(server);
                                     serverInstance.distributeA(vmNeeded.getCore(), vmNeeded.getMemory());
                                     serverInstanceList.add(serverInstance);
@@ -234,6 +267,6 @@ public class Main {
 //        JudgeUtil judgeUtil = new JudgeUtil("code/CodeCraft-2021/data/output.txt", file.getServers(), vms, VMOperations, migrateServerOperations);
 //        judgeUtil.Judge();
         long endTime=System.currentTimeMillis(); //获取结束时间
-//        System.out.println("程序运行时间： "+(endTime-startTime)+"ms");
+        System.out.println("程序运行时间： "+(endTime-startTime)+"ms");
     }
 }
