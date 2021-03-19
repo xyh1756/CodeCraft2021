@@ -6,7 +6,6 @@ import com.huawei.java.model.VM;
 import com.huawei.java.model.VMInstance;
 import com.huawei.java.operation.*;
 import com.huawei.java.utils.FileUtil;
-import com.huawei.java.utils.JudgeUtil;
 import com.huawei.java.utils.OutputUtil;
 
 import java.util.*;
@@ -37,13 +36,8 @@ public class Main {
             List<ServerInstance> serverInstanceListVMPriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余虚拟机占用资源升序
             List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余资源升序
             Collections.sort(serverInstanceListVMPriority);
-            serverInstanceListResourcePriority.sort(new Comparator<ServerInstance>() {
-                @Override
-                public int compare(ServerInstance o1, ServerInstance o2) {
-                    return o1.getALeftCore() + o1.getALeftMemory() + o1.getBLeftCore() + o1.getBLeftMemory()
-                            - o2.getALeftCore() - o2.getALeftMemory() - o2.getBLeftCore() - o2.getBLeftMemory();
-                }
-            });
+            serverInstanceListResourcePriority.sort((o1, o2) -> o1.getALeftCore() + o1.getALeftMemory() + o1.getBLeftCore() + o1.getBLeftMemory()
+                    - o2.getALeftCore() - o2.getALeftMemory() - o2.getBLeftCore() - o2.getBLeftMemory());
 
             // 迁移虚拟机
             int migrateAmount = 0;
@@ -88,6 +82,7 @@ public class Main {
                 }
             }
 
+            Collections.shuffle(serverInstanceList);
             for (Operation operation : vmOperationsDaily) {
                 VMOperation vmoperation = (VMOperation) operation;
                 // 建立虚拟机
