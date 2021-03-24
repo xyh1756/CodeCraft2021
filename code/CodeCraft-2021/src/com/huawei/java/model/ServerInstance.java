@@ -1,7 +1,5 @@
 package com.huawei.java.model;
 
-import com.huawei.java.main.Main;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +12,8 @@ public class ServerInstance implements Comparable<ServerInstance>{
     private int BLeftCore;
     private int ALeftMemory;
     private int BLeftMemory;
+    private int totalResource;
+    public int totalOccupiedResource;
 
     public ServerInstance(Server serverType) {
         this.serverType = serverType;
@@ -22,6 +22,8 @@ public class ServerInstance implements Comparable<ServerInstance>{
         this.ALeftMemory = serverType.getMemory() / 2;
         this.BLeftCore = this.ALeftCore;
         this.BLeftMemory = this.ALeftMemory;
+        totalResource = this.ALeftCore + this.ALeftMemory + this.BLeftCore + this.BLeftMemory;
+        totalOccupiedResource = 0;
     }
 
     public List<VMInstance> getVmInstances() {
@@ -51,6 +53,8 @@ public class ServerInstance implements Comparable<ServerInstance>{
                 this.BLeftCore += vmInstance.getVmType().getCore();
                 this.BLeftMemory += vmInstance.getVmType().getMemory();
             }
+            totalResource += vmInstance.getVmType().getCore() + vmInstance.getVmType().getMemory();
+            totalOccupiedResource -= vmInstance.getVmType().getCore() + vmInstance.getVmType().getMemory();
             return true;
         } else return false;
     }
@@ -111,6 +115,8 @@ public class ServerInstance implements Comparable<ServerInstance>{
         if (ALeftCore >= core && ALeftMemory >= memory) {
             ALeftCore -= core;
             ALeftMemory -= memory;
+            totalResource -= core + memory;
+            totalOccupiedResource += core + memory;
             return true;
         } else
             return false;
@@ -120,6 +126,8 @@ public class ServerInstance implements Comparable<ServerInstance>{
         if (BLeftCore >= core && BLeftMemory >= memory) {
             BLeftCore -= core;
             BLeftMemory -= memory;
+            totalResource -= core + memory;
+            totalOccupiedResource += core + memory;
             return true;
         } else
             return false;
@@ -132,6 +140,8 @@ public class ServerInstance implements Comparable<ServerInstance>{
             ALeftMemory -= dualMemory;
             BLeftCore -= dualCore;
             BLeftMemory -= dualMemory;
+            totalResource -= core + memory;
+            totalOccupiedResource += core + memory;
             return true;
         } else
             return false;
@@ -139,13 +149,10 @@ public class ServerInstance implements Comparable<ServerInstance>{
 
     @Override
     public int compareTo(ServerInstance o) {
-        int resource1 = 0, resource2 = 0;
-        for (VMInstance vmInstance : this.vmInstances) {
-            resource1 += vmInstance.getVmType().getCore() + vmInstance.getVmType().getMemory();
-        }
-        for (VMInstance vmInstance : o.vmInstances) {
-            resource2 += vmInstance.getVmType().getCore() + vmInstance.getVmType().getMemory();
-        }
-        return resource1 - resource2;
+        return totalOccupiedResource - o.totalOccupiedResource;
+    }
+
+    public int getTotalResource() {
+        return totalResource;
     }
 }
