@@ -10,7 +10,6 @@ import java.util.*;
 
 public class FileUtil {
     public int serverNumber;
-    public Map<String, Server> servers;
     public List<Server> serverList;
     public int vmNumber;
     public Map<String, VM> vms;
@@ -18,7 +17,6 @@ public class FileUtil {
     public List<List<Operation>> operations;
 
     public FileUtil(String filePath) {
-        servers = new HashMap<>();
         serverList = new ArrayList<>();
         vms = new HashMap<>();
         operations = new ArrayList<>();
@@ -32,9 +30,6 @@ public class FileUtil {
             for (int i = 0; i < serverNumber; i++) {
                 line = scanner.nextLine();
                 information = line.substring(1, line.length() - 1).split(",");
-                servers.put(information[0], new Server(information[0], Integer.parseInt(information[1].trim()),
-                        Integer.parseInt(information[2].trim()), Integer.parseInt(information[3].trim()),
-                        Integer.parseInt(information[4].trim())));
                 serverList.add(new Server(information[0], Integer.parseInt(information[1].trim()),
                         Integer.parseInt(information[2].trim()), Integer.parseInt(information[3].trim()),
                         Integer.parseInt(information[4].trim())));
@@ -69,10 +64,6 @@ public class FileUtil {
 
     public int getServerNumber() {
         return serverNumber;
-    }
-
-    public Map<String, Server> getServers() {
-        return servers;
     }
 
     public List<Server> getServerList() {

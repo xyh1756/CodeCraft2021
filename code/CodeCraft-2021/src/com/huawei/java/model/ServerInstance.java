@@ -40,21 +40,22 @@ public class ServerInstance implements Comparable<ServerInstance>{
     }
 
     public boolean delVmInstance(VMInstance vmInstance) {
+        int core = vmInstance.getVmType().getCore(), memory = vmInstance.getVmType().getMemory();
         if (this.vmInstances.remove(vmInstance)) {
             if (vmInstance.getVmType().isDual()) {
-                this.ALeftCore += vmInstance.getVmType().getCore() / 2;
-                this.ALeftMemory += vmInstance.getVmType().getMemory() / 2;
-                this.BLeftCore += vmInstance.getVmType().getCore() / 2;
-                this.BLeftMemory += vmInstance.getVmType().getMemory() / 2;
+                this.ALeftCore += core / 2;
+                this.ALeftMemory += memory / 2;
+                this.BLeftCore += core / 2;
+                this.BLeftMemory += memory / 2;
             } else if (vmInstance.getNode() == 0) {
-                this.ALeftCore += vmInstance.getVmType().getCore();
-                this.ALeftMemory += vmInstance.getVmType().getMemory();
+                this.ALeftCore += core;
+                this.ALeftMemory += memory;
             } else {
-                this.BLeftCore += vmInstance.getVmType().getCore();
-                this.BLeftMemory += vmInstance.getVmType().getMemory();
+                this.BLeftCore += core;
+                this.BLeftMemory += memory;
             }
-            totalResource += vmInstance.getVmType().getCore() + vmInstance.getVmType().getMemory();
-            totalOccupiedResource -= vmInstance.getVmType().getCore() + vmInstance.getVmType().getMemory();
+            totalResource += core + memory;
+            totalOccupiedResource -= core + memory;
             return true;
         } else return false;
     }
