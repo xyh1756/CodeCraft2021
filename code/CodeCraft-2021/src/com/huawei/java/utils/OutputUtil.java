@@ -15,15 +15,17 @@ public class OutputUtil {
     public final List<List<Operation>> buyServerOperations;
     public final List<List<Operation>> distributeServerOperations;
     public final List<List<Operation>> migrateServerOperations;
+    public final String fileName;
 
-    public OutputUtil(List<List<Operation>> buyServerOperations, List<List<Operation>> distributeServerOperations, List<List<Operation>> migrateServerOperations) {
+    public OutputUtil(List<List<Operation>> buyServerOperations, List<List<Operation>> distributeServerOperations, List<List<Operation>> migrateServerOperations, String fileName) {
         this.buyServerOperations = buyServerOperations;
         this.distributeServerOperations = distributeServerOperations;
         this.migrateServerOperations = migrateServerOperations;
+        this.fileName = fileName;
     }
 
     public void OutPut() throws FileNotFoundException {
-//        PrintStream ps = new PrintStream(new BufferedOutputStream(new FileOutputStream("code/CodeCraft-2021/data/output.txt")), true);
+//        PrintStream ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(fileName)), true);
 //        System.setOut(ps);
         for (int i = 0; i < buyServerOperations.size(); i++) {
             System.out.printf("(purchase, %d)\n", buyServerOperations.get(i).size());
