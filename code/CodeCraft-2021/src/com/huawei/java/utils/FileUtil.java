@@ -9,11 +9,14 @@ import java.io.*;
 import java.util.*;
 
 public class FileUtil {
+    public FileInputStream fileInputStream;
+    public Scanner scanner;
     public int serverNumber;
     public List<Server> serverList;
     public int vmNumber;
     public Map<String, VM> vms;
     public int days;
+    public int K;
     public List<List<Operation>> operations;
 
     public FileUtil(String filePath) {
@@ -21,9 +24,9 @@ public class FileUtil {
         vms = new HashMap<>();
         operations = new ArrayList<>();
         try {
-//            FileInputStream fileInputStream = new FileInputStream(filePath);
+//            fileInputStream = new FileInputStream(filePath);
 //            System.setIn(fileInputStream);
-            Scanner scanner = new Scanner(System.in);
+            scanner = new Scanner(System.in);
             String line;
             String[] information;
             serverNumber = Integer.parseInt(scanner.nextLine());
@@ -41,8 +44,10 @@ public class FileUtil {
                 vms.put(information[0], new VM(information[0], Integer.parseInt(information[1].trim()),
                         Integer.parseInt(information[2].trim()), information[3].trim().equals("1")));
             }
-            days = Integer.parseInt(scanner.nextLine());
-            for (int i = 0; i < days; i++) {
+            String[] daysAndK = scanner.nextLine().split(" ");
+            days = Integer.parseInt(daysAndK[0]);
+            K = Integer.parseInt(daysAndK[1]);
+            for (int i = 0; i < K; i++) {
                 int orders = Integer.parseInt(scanner.nextLine());
                 List<Operation> operations_daily = new ArrayList<>();
                 for (int j = 0; j < orders; j++) {
@@ -60,6 +65,24 @@ public class FileUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Operation> parseDay() {
+        int orders = Integer.parseInt(scanner.nextLine());
+        List<Operation> operations_daily = new ArrayList<>();
+        String line;
+        String[] information;
+        for (int j = 0; j < orders; j++) {
+            line = scanner.nextLine();
+            information = line.substring(1, line.length() - 1).split(",");
+            if (information[0].equals("add"))
+                operations_daily.add(new VMOperation(information[0], information[1].trim(),
+                        Integer.parseInt(information[2].trim())));
+            else
+                operations_daily.add(new VMOperation(information[0], null,
+                        Integer.parseInt(information[1].trim())));
+        }
+        return operations_daily;
     }
 
     public int getServerNumber() {
@@ -84,5 +107,13 @@ public class FileUtil {
 
     public List<List<Operation>> getOperations() {
         return operations;
+    }
+
+    public int getLeftDays() {
+        return days - K;
+    }
+
+    public int getK() {
+        return K;
     }
 }

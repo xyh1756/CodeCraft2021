@@ -12,6 +12,7 @@ import java.io.PrintStream;
 import java.util.List;
 
 public class OutputUtil {
+    public PrintStream printStream;
     public final List<List<Operation>> buyServerOperations;
     public final List<List<Operation>> distributeServerOperations;
     public final List<List<Operation>> migrateServerOperations;
@@ -22,11 +23,15 @@ public class OutputUtil {
         this.distributeServerOperations = distributeServerOperations;
         this.migrateServerOperations = migrateServerOperations;
         this.fileName = fileName;
+        try {
+//            this.printStream = new PrintStream(new BufferedOutputStream(new FileOutputStream(fileName)), true);
+//            System.setOut(this.printStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public void OutPut() throws FileNotFoundException {
-//        PrintStream ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(fileName)), true);
-//        System.setOut(ps);
+    public void OutPut() {
         for (int i = 0; i < buyServerOperations.size(); i++) {
             System.out.printf("(purchase, %d)\n", buyServerOperations.get(i).size());
             for (Operation serverOperation : buyServerOperations.get(i)) {
@@ -52,6 +57,33 @@ public class OutputUtil {
                 else
                     System.out.printf("(%d)\n", distributeServerOperation.serverInstance.getID());
             }
+        }
+    }
+
+    public void OutPutOneDay(List<Operation> buyServerOperationsDaily, List<Operation> distributeServerOperationsDaily, List<Operation> migrateServerOperationsDaily) {
+        System.out.printf("(purchase, %d)\n", buyServerOperationsDaily.size());
+        for (Operation serverOperation : buyServerOperationsDaily) {
+            BuyServerOperation buyServerOperation = (BuyServerOperation) serverOperation;
+            System.out.printf("(%s, %d)\n", buyServerOperation.ServerType.getType(), buyServerOperation.number);
+        }
+        System.out.printf("(migration, %d)\n", migrateServerOperationsDaily.size());
+        for (Operation serverOperation : migrateServerOperationsDaily) {
+            MigrateServerOperation migrateServerOperation = (MigrateServerOperation) serverOperation;
+            if (migrateServerOperation.Node == 0)
+                System.out.printf("(%d, %d, %s)\n", migrateServerOperation.vmID, migrateServerOperation.serverInstanceID, "A");
+            else if (migrateServerOperation.Node == 1)
+                System.out.printf("(%d, %d, %s)\n", migrateServerOperation.vmID, migrateServerOperation.serverInstanceID, "B");
+            else
+                System.out.printf("(%d, %d)\n", migrateServerOperation.vmID, migrateServerOperation.serverInstanceID);
+        }
+        for (Operation serverOperation : distributeServerOperationsDaily) {
+            DistributeServerOperation distributeServerOperation = (DistributeServerOperation) serverOperation;
+            if (distributeServerOperation.Node == 0)
+                System.out.printf("(%d, %s)\n", distributeServerOperation.serverInstance.getID(), "A");
+            else if (distributeServerOperation.Node == 1)
+                System.out.printf("(%d, %s)\n", distributeServerOperation.serverInstance.getID(), "B");
+            else
+                System.out.printf("(%d)\n", distributeServerOperation.serverInstance.getID());
         }
     }
 }
