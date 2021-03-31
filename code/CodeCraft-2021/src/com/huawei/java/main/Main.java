@@ -39,15 +39,20 @@ public class Main {
             List<Operation> migrateServerOperationsDaily = new ArrayList<>();
             List<ServerInstance> serverInstanceListVMPriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余虚拟机占用资源升序
             List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余资源升序
+//            for (ServerInstance serverInstance : serverInstanceList) {
+//                if (serverInstance.getTotalResource() * 15 > serverInstance.getServerType().getCore() + serverInstance.getServerType().getMemory())
+//                    serverInstanceListResourcePriority.add(serverInstance);
+//            }
             serverInstanceListResourcePriority.sort(Comparator.comparingInt(ServerInstance::getTotalResource));
             Collections.sort(serverInstanceListVMPriority);
 
 
             // 迁移虚拟机
             int migrateAmount = 0;
-            int migrateAmountLimit = vmInstanceList.size() * 3 / 100;
+            int migrateAmountLimit = vmInstanceList.size() * 3 / 150;
+            List<VMInstance> vmInstancesToMigrate;
             for (int i = 0; migrateAmount < migrateAmountLimit && i < serverInstanceListVMPriority.size(); i++) {
-                List<VMInstance> vmInstancesToMigrate = new ArrayList<>(serverInstanceListVMPriority.get(i).getVmInstances());
+                vmInstancesToMigrate = new ArrayList<>(serverInstanceListVMPriority.get(i).getVmInstances());
                 for (VMInstance vmInstance : vmInstancesToMigrate) {
                     boolean migrated = false;
                     for (int j = 0; migrateAmount < migrateAmountLimit && j < serverInstanceListResourcePriority.size(); j++) {
@@ -107,7 +112,7 @@ public class Main {
                                 serverInstance.addVmInstance(vmInstance);
                                 vmInstance.setServerInstance(serverInstance);
                                 vmInstance.setNode(2);
-                                serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 2));
+                                serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 2));
                                 vmInstanceList.add(vmInstance);
                                 distributed = true;
                                 break;
@@ -127,7 +132,7 @@ public class Main {
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(2);
                                     serverOperationsDaily.add(new BuyServerOperation(server, 1, serverInstance));
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 2));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 2));
                                     vmInstanceList.add(vmInstance);
                                     distributed = true;
                                     break;
@@ -146,7 +151,7 @@ public class Main {
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(2);
                                     serverOperationsDaily.add(new BuyServerOperation(server, 1, serverInstance));
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 2));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 2));
                                     vmInstanceList.add(vmInstance);
                                     break;
                                 }
@@ -162,7 +167,7 @@ public class Main {
                                 serverInstance.addVmInstance(vmInstance);
                                 vmInstance.setServerInstance(serverInstance);
                                 vmInstance.setNode(0);
-                                serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 0));
+                                serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 0));
                                 vmInstanceList.add(vmInstance);
                                 distributed = true;
                                 break;
@@ -171,7 +176,7 @@ public class Main {
                                 serverInstance.addVmInstance(vmInstance);
                                 vmInstance.setServerInstance(serverInstance);
                                 vmInstance.setNode(1);
-                                serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 1));
+                                serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 1));
                                 vmInstanceList.add(vmInstance);
                                 distributed = true;
                                 break;
@@ -184,7 +189,7 @@ public class Main {
                                     serverInstance.addVmInstance(vmInstance);
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(0);
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 0));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 0));
                                     vmInstanceList.add(vmInstance);
                                     distributed = true;
                                     break;
@@ -193,7 +198,7 @@ public class Main {
                                     serverInstance.addVmInstance(vmInstance);
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(1);
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 1));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 1));
                                     vmInstanceList.add(vmInstance);
                                     distributed = true;
                                     break;
@@ -214,7 +219,7 @@ public class Main {
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(0);
                                     serverOperationsDaily.add(new BuyServerOperation(server, 1, serverInstance));
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 0));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 0));
                                     vmInstanceList.add(vmInstance);
                                     break;
                                 }
@@ -273,7 +278,7 @@ public class Main {
             distributeServerOperations.add(distributeServerOperationDaily);
 //            deleteVMOperations.add(deleteVMOperationsDaily);
         }
-        // 输出结果
+        // 输出第一部分结果
         OutputUtil outputUtil = new OutputUtil(buyServerOperations, distributeServerOperations, migrateServerOperations, "code/CodeCraft-2021/data/output.txt");
         outputUtil.OutPut();
         System.out.flush();
@@ -285,15 +290,20 @@ public class Main {
             List<Operation> migrateServerOperationsDaily = new ArrayList<>();
             List<ServerInstance> serverInstanceListVMPriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余虚拟机占用资源升序
             List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余资源升序
+//            for (ServerInstance serverInstance : serverInstanceList) {
+//                if (serverInstance.getTotalResource() * 15 > serverInstance.getServerType().getCore() + serverInstance.getServerType().getMemory())
+//                    serverInstanceListResourcePriority.add(serverInstance);
+//            }
             serverInstanceListResourcePriority.sort(Comparator.comparingInt(ServerInstance::getTotalResource));
             Collections.sort(serverInstanceListVMPriority);
 
 
             // 迁移虚拟机
             int migrateAmount = 0;
-            int migrateAmountLimit = vmInstanceList.size() * 3 / 100;
+            int migrateAmountLimit = vmInstanceList.size() * 3 / 150;
+            List<VMInstance> vmInstancesToMigrate;
             for (int i = 0; migrateAmount < migrateAmountLimit && i < serverInstanceListVMPriority.size(); i++) {
-                List<VMInstance> vmInstancesToMigrate = new ArrayList<>(serverInstanceListVMPriority.get(i).getVmInstances());
+                vmInstancesToMigrate = new ArrayList<>(serverInstanceListVMPriority.get(i).getVmInstances());
                 for (VMInstance vmInstance : vmInstancesToMigrate) {
                     boolean migrated = false;
                     for (int j = 0; migrateAmount < migrateAmountLimit && j < serverInstanceListResourcePriority.size(); j++) {
@@ -353,7 +363,7 @@ public class Main {
                                 serverInstance.addVmInstance(vmInstance);
                                 vmInstance.setServerInstance(serverInstance);
                                 vmInstance.setNode(2);
-                                serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 2));
+                                serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 2));
                                 vmInstanceList.add(vmInstance);
                                 distributed = true;
                                 break;
@@ -373,7 +383,7 @@ public class Main {
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(2);
                                     serverOperationsDaily.add(new BuyServerOperation(server, 1, serverInstance));
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 2));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 2));
                                     vmInstanceList.add(vmInstance);
                                     distributed = true;
                                     break;
@@ -392,7 +402,7 @@ public class Main {
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(2);
                                     serverOperationsDaily.add(new BuyServerOperation(server, 1, serverInstance));
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 2));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 2));
                                     vmInstanceList.add(vmInstance);
                                     break;
                                 }
@@ -408,7 +418,7 @@ public class Main {
                                 serverInstance.addVmInstance(vmInstance);
                                 vmInstance.setServerInstance(serverInstance);
                                 vmInstance.setNode(0);
-                                serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 0));
+                                serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 0));
                                 vmInstanceList.add(vmInstance);
                                 distributed = true;
                                 break;
@@ -417,7 +427,7 @@ public class Main {
                                 serverInstance.addVmInstance(vmInstance);
                                 vmInstance.setServerInstance(serverInstance);
                                 vmInstance.setNode(1);
-                                serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 1));
+                                serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 1));
                                 vmInstanceList.add(vmInstance);
                                 distributed = true;
                                 break;
@@ -430,7 +440,7 @@ public class Main {
                                     serverInstance.addVmInstance(vmInstance);
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(0);
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 0));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 0));
                                     vmInstanceList.add(vmInstance);
                                     distributed = true;
                                     break;
@@ -439,7 +449,7 @@ public class Main {
                                     serverInstance.addVmInstance(vmInstance);
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(1);
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 1));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 1));
                                     vmInstanceList.add(vmInstance);
                                     distributed = true;
                                     break;
@@ -460,7 +470,7 @@ public class Main {
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(0);
                                     serverOperationsDaily.add(new BuyServerOperation(server, 1, serverInstance));
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 0));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 0));
                                     vmInstanceList.add(vmInstance);
                                     break;
                                 }

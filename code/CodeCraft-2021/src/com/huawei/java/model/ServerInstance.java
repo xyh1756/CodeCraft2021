@@ -13,7 +13,7 @@ public class ServerInstance implements Comparable<ServerInstance>{
     private int ALeftMemory;
     private int BLeftMemory;
     private int totalResource;
-    public int totalOccupiedResource;
+    private int totalOccupiedResource;
 
     public ServerInstance(Server serverType) {
         this.serverType = serverType;

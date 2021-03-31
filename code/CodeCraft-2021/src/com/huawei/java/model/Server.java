@@ -61,8 +61,8 @@ public class Server implements Comparable<Server>{
     @Override
     public int compareTo(Server o) {
 //        return this.hardwareCost - o.hardwareCost;
-        return (int) Math.round(this.hardwareCost * (1.0 - (double) a / this.hardwareCost / (this.core * 0.7 + this.memory * 0.3) - (double) b / this.energyCost) - o.hardwareCost * (1.0 - (double) a / o.hardwareCost / (o.core * 0.7 + o.memory * 0.3) - (double) b / o.energyCost));
-
+        return this.energyCost - o.energyCost;
+//        return (int) Math.round(this.hardwareCost * (1.0 - (double) a / this.hardwareCost / (this.core * 0.75 + this.memory * 0.25) - (double) b / this.energyCost) - o.hardwareCost * (1.0 - (double) a / o.hardwareCost / (o.core * 0.75 + o.memory * 0.25) - (double) b / o.energyCost));
 //        return (int) Math.round(5000 * this.hardwareCost / (this.core * 0.7 + this.memory * 0.3) - 5000 * o.hardwareCost / (o.core * 0.7 + o.memory * 0.3)) + this.hardwareCost - o.hardwareCost + 1000 * this.energyCost - 1000 * o.energyCost;
     }
 }
