@@ -38,9 +38,10 @@ public class Main {
 //            List<Operation> deleteVMOperationsDaily = new ArrayList<>();
             List<Operation> migrateServerOperationsDaily = new ArrayList<>();
             List<ServerInstance> serverInstanceListVMPriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余虚拟机占用资源升序
+//            List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余资源升序
             List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(); // 按照服务器实例剩余资源升序
             for (ServerInstance serverInstance : serverInstanceList) {
-                if (serverInstance.getTotalResource() * 15 > serverInstance.getServerType().getCore() + serverInstance.getServerType().getMemory())
+                if (serverInstance.getTotalResource() * 17 > serverInstance.getServerType().getCore() + serverInstance.getServerType().getMemory())
                     serverInstanceListResourcePriority.add(serverInstance);
             }
             serverInstanceListResourcePriority.sort(Comparator.comparingInt(ServerInstance::getTotalResource));
@@ -94,22 +95,22 @@ public class Main {
                 }
             }
 
-//            // 虚拟机操作分段排序
-//            int lastDelete = -1;
-//            for (int i = 0; i < vmOperationsDaily.size(); i++) {
-//                if (((VMOperation) vmOperationsDaily.get(i)).type.equals("del")) {
-//                    if (i == 0) {
-//                        lastDelete = 0;
-//                        continue;
-//                    }
-//                    vmOperationsDaily.subList(lastDelete + 1, i).sort((o1, o2) -> {
-//                        VM vm1 = vms.get(((VMOperation) o1).VMType);
-//                        VM vm2 = vms.get(((VMOperation) o2).VMType);
-//                        return vm2.getCore() * 3 + vm2.getMemory() - vm1.getCore() * 3 - vm1.getMemory();
-//                    });
-//                    lastDelete = i;
-//                }
-//            }
+            // 虚拟机操作分段排序
+            int lastDelete = -1;
+            for (int i = 0; i < vmOperationsDaily.size(); i++) {
+                if (((VMOperation) vmOperationsDaily.get(i)).type.equals("del")) {
+                    if (i == 0) {
+                        lastDelete = 0;
+                        continue;
+                    }
+                    vmOperationsDaily.subList(lastDelete + 1, i).sort((o1, o2) -> {
+                        VM vm1 = vms.get(((VMOperation) o1).VMType);
+                        VM vm2 = vms.get(((VMOperation) o2).VMType);
+                        return vm2.getCore() + vm2.getMemory() - vm1.getCore() - vm1.getMemory();
+                    });
+                    lastDelete = i;
+                }
+            }
 
             for (Operation operation : vmOperationsDaily) {
                 VMOperation vmoperation = (VMOperation) operation;
@@ -310,9 +311,10 @@ public class Main {
             List<Operation> serverOperationsDaily = new ArrayList<>();
             List<Operation> migrateServerOperationsDaily = new ArrayList<>();
             List<ServerInstance> serverInstanceListVMPriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余虚拟机占用资源升序
+//            List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余资源升序
             List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(); // 按照服务器实例剩余资源升序
             for (ServerInstance serverInstance : serverInstanceList) {
-                if (serverInstance.getTotalResource() * 15 > serverInstance.getServerType().getCore() + serverInstance.getServerType().getMemory())
+                if (serverInstance.getTotalResource() * 17 > serverInstance.getServerType().getCore() + serverInstance.getServerType().getMemory())
                     serverInstanceListResourcePriority.add(serverInstance);
             }
             serverInstanceListResourcePriority.sort(Comparator.comparingInt(ServerInstance::getTotalResource));
@@ -366,22 +368,22 @@ public class Main {
                 }
             }
 
-//            // 虚拟机操作分段排序
-//            int lastDelete = -1;
-//            for (int i = 0; i < vmOperationsDaily.size(); i++) {
-//                if (((VMOperation) vmOperationsDaily.get(i)).type.equals("del")) {
-//                    if (i == 0) {
-//                        lastDelete = 0;
-//                        continue;
-//                    }
-//                    vmOperationsDaily.subList(lastDelete + 1, i).sort((o1, o2) -> {
-//                        VM vm1 = vms.get(((VMOperation) o1).VMType);
-//                        VM vm2 = vms.get(((VMOperation) o2).VMType);
-//                        return vm2.getCore() * 3 + vm2.getMemory() - vm1.getCore() * 3 - vm1.getMemory();
-//                    });
-//                    lastDelete = i;
-//                }
-//            }
+            // 虚拟机操作分段排序
+            int lastDelete = -1;
+            for (int i = 0; i < vmOperationsDaily.size(); i++) {
+                if (((VMOperation) vmOperationsDaily.get(i)).type.equals("del")) {
+                    if (i == 0) {
+                        lastDelete = 0;
+                        continue;
+                    }
+                    vmOperationsDaily.subList(lastDelete + 1, i).sort((o1, o2) -> {
+                        VM vm1 = vms.get(((VMOperation) o1).VMType);
+                        VM vm2 = vms.get(((VMOperation) o2).VMType);
+                        return vm2.getCore() + vm2.getMemory() - vm1.getCore() - vm1.getMemory();
+                    });
+                    lastDelete = i;
+                }
+            }
 
             for (Operation operation : vmOperationsDaily) {
                 VMOperation vmoperation = (VMOperation) operation;
