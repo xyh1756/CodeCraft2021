@@ -156,4 +156,8 @@ public class ServerInstance implements Comparable<ServerInstance>{
     public int getTotalResource() {
         return totalResource;
     }
+
+    public int getSingleMaxResource() {
+        return Math.max(ALeftCore + ALeftMemory, BLeftCore + BLeftMemory);
+    }
 }

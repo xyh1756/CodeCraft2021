@@ -55,10 +55,10 @@ public class FileUtil {
                     information = line.substring(1, line.length() - 1).split(",");
                     if (information[0].equals("add"))
                         operations_daily.add(new VMOperation(information[0], information[1].trim(),
-                            Integer.parseInt(information[2].trim())));
+                            Integer.parseInt(information[2].trim()), j));
                     else
                         operations_daily.add(new VMOperation(information[0], null,
-                                Integer.parseInt(information[1].trim())));
+                                Integer.parseInt(information[1].trim()), j));
                 }
                 operations.add(operations_daily);
             }
@@ -77,10 +77,10 @@ public class FileUtil {
             information = line.substring(1, line.length() - 1).split(",");
             if (information[0].equals("add"))
                 operations_daily.add(new VMOperation(information[0], information[1].trim(),
-                        Integer.parseInt(information[2].trim())));
+                        Integer.parseInt(information[2].trim()), j));
             else
                 operations_daily.add(new VMOperation(information[0], null,
-                        Integer.parseInt(information[1].trim())));
+                        Integer.parseInt(information[1].trim()), j));
         }
         return operations_daily;
     }
