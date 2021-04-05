@@ -3,7 +3,7 @@ package com.huawei.java.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerInstance implements Comparable<ServerInstance>{
+public class ServerInstance{
     private final Server serverType;
     private int ID;
     private boolean running;
@@ -146,11 +146,6 @@ public class ServerInstance implements Comparable<ServerInstance>{
             return true;
         } else
             return false;
-    }
-
-    @Override
-    public int compareTo(ServerInstance o) {
-        return totalOccupiedResource - o.totalOccupiedResource;
     }
 
     public int getTotalResource() {

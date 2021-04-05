@@ -18,7 +18,6 @@ public class Main {
         int leftDays = file.getLeftDays();
         int K = file.getK();
         List<Server> serverList = file.getServerList();
-        Collections.sort(serverList);
         Map<String, VM> vms = file.getVms();
         List<List<Operation>> VMOperations = file.getOperations();
         List<ServerInstance> serverInstanceList = new ArrayList<>(8000);
@@ -29,10 +28,11 @@ public class Main {
         List<List<Operation>> migrateServerOperations = new ArrayList<>();
 //        List<List<Operation>> deleteVMOperations = new ArrayList<>();
         int buyServerAmount = 0;
-        int readDays = 0;
 
         // 执行虚拟机创建、删除操作
-        for (; readDays < K; readDays++) {
+        for (int readDays = 0; readDays < K; readDays++) {
+            int finalReadDays = readDays;
+            serverList.sort(((o1, o2) -> (o1.getHardwareCost() - o2.getHardwareCost()) * 7 / 10 + (leftDays + K - finalReadDays) * (o1.getEnergyCost() - o2.getEnergyCost())));
             List<Operation> vmOperationsDaily = VMOperations.get(readDays);
             List<Operation> serverOperationsDaily = new ArrayList<>();
 //            List<Operation> deleteVMOperationsDaily = new ArrayList<>();
@@ -45,7 +45,7 @@ public class Main {
                     serverInstanceListResourcePriority.add(serverInstance);
             }
             serverInstanceListResourcePriority.sort(Comparator.comparingInt(ServerInstance::getTotalResource));
-            Collections.sort(serverInstanceListVMPriority);
+            serverInstanceListVMPriority.sort(Comparator.comparingInt(ServerInstance::getTotalResource).reversed());
 
 
             // 迁移虚拟机
@@ -307,6 +307,8 @@ public class Main {
 
         // 开始剩余天数交互
         for (int day = 0; day < leftDays; day++) {
+            int finalDay = day;
+            serverList.sort(((o1, o2) -> (o1.getHardwareCost() - o2.getHardwareCost()) * 7 / 10 + (leftDays - finalDay) * (o1.getEnergyCost() - o2.getEnergyCost())));
             List<Operation> vmOperationsDaily = file.parseDay();
             List<Operation> serverOperationsDaily = new ArrayList<>();
             List<Operation> migrateServerOperationsDaily = new ArrayList<>();
@@ -318,7 +320,7 @@ public class Main {
                     serverInstanceListResourcePriority.add(serverInstance);
             }
             serverInstanceListResourcePriority.sort(Comparator.comparingInt(ServerInstance::getTotalResource));
-            Collections.sort(serverInstanceListVMPriority);
+            serverInstanceListVMPriority.sort(Comparator.comparingInt(ServerInstance::getTotalResource).reversed());
 
 
             // 迁移虚拟机

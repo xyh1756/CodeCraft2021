@@ -32,58 +32,90 @@ public class OutputUtil {
     }
 
     public void OutPut() {
+        StringBuilder output = new StringBuilder();
         for (int i = 0; i < buyServerOperations.size(); i++) {
-            System.out.printf("(purchase, %d)\n", buyServerOperations.get(i).size());
+            output.append("(purchase, ");
+            output.append(buyServerOperations.get(i).size());
+            output.append(")\n");
             for (Operation serverOperation : buyServerOperations.get(i)) {
                 BuyServerOperation buyServerOperation = (BuyServerOperation) serverOperation;
-                System.out.printf("(%s, %d)\n", buyServerOperation.ServerType.getType(), buyServerOperation.number);
+                output.append("(");
+                output.append(buyServerOperation.ServerType.getType());
+                output.append(", ");
+                output.append(buyServerOperation.number);
+                output.append(")\n");
             }
-            System.out.printf("(migration, %d)\n", migrateServerOperations.get(i).size());
+            output.append("(migration, ");
+            output.append(migrateServerOperations.get(i).size());
+            output.append(")\n");
             for (Operation serverOperation : migrateServerOperations.get(i)) {
                 MigrateServerOperation migrateServerOperation = (MigrateServerOperation) serverOperation;
+                output.append("(");
+                output.append(migrateServerOperation.vmID);
+                output.append(", ");
+                output.append(migrateServerOperation.serverInstanceID);
                 if (migrateServerOperation.Node == 0)
-                    System.out.printf("(%d, %d, %s)\n", migrateServerOperation.vmID, migrateServerOperation.serverInstanceID, "A");
+                    output.append(", A)\n");
                 else if (migrateServerOperation.Node == 1)
-                    System.out.printf("(%d, %d, %s)\n", migrateServerOperation.vmID, migrateServerOperation.serverInstanceID, "B");
+                    output.append(", B)\n");
                 else
-                    System.out.printf("(%d, %d)\n", migrateServerOperation.vmID, migrateServerOperation.serverInstanceID);
+                    output.append(")\n");
             }
             for (Operation serverOperation : distributeServerOperations.get(i)) {
                 DistributeServerOperation distributeServerOperation = (DistributeServerOperation) serverOperation;
+                output.append("(");
+                output.append(distributeServerOperation.serverInstance.getID());
                 if (distributeServerOperation.Node == 0)
-                    System.out.printf("(%d, %s)\n", distributeServerOperation.serverInstance.getID(), "A");
+                    output.append(", A)\n");
                 else if (distributeServerOperation.Node == 1)
-                    System.out.printf("(%d, %s)\n", distributeServerOperation.serverInstance.getID(), "B");
+                    output.append(", B)\n");
                 else
-                    System.out.printf("(%d)\n", distributeServerOperation.serverInstance.getID());
+                    output.append(")\n");
             }
         }
+        System.out.print(output);
     }
 
     public void OutPutOneDay(List<Operation> buyServerOperationsDaily, List<Operation> distributeServerOperationsDaily, List<Operation> migrateServerOperationsDaily) {
-        System.out.printf("(purchase, %d)\n", buyServerOperationsDaily.size());
+        StringBuilder output = new StringBuilder();
+        output.append("(purchase, ");
+        output.append(buyServerOperationsDaily.size());
+        output.append(")\n");
         for (Operation serverOperation : buyServerOperationsDaily) {
             BuyServerOperation buyServerOperation = (BuyServerOperation) serverOperation;
-            System.out.printf("(%s, %d)\n", buyServerOperation.ServerType.getType(), buyServerOperation.number);
+            output.append("(");
+            output.append(buyServerOperation.ServerType.getType());
+            output.append(", ");
+            output.append(buyServerOperation.number);
+            output.append(")\n");
         }
-        System.out.printf("(migration, %d)\n", migrateServerOperationsDaily.size());
+        output.append("(migration, ");
+        output.append(migrateServerOperationsDaily.size());
+        output.append(")\n");
         for (Operation serverOperation : migrateServerOperationsDaily) {
             MigrateServerOperation migrateServerOperation = (MigrateServerOperation) serverOperation;
+            output.append("(");
+            output.append(migrateServerOperation.vmID);
+            output.append(", ");
+            output.append(migrateServerOperation.serverInstanceID);
             if (migrateServerOperation.Node == 0)
-                System.out.printf("(%d, %d, %s)\n", migrateServerOperation.vmID, migrateServerOperation.serverInstanceID, "A");
+                output.append(", A)\n");
             else if (migrateServerOperation.Node == 1)
-                System.out.printf("(%d, %d, %s)\n", migrateServerOperation.vmID, migrateServerOperation.serverInstanceID, "B");
+                output.append(", B)\n");
             else
-                System.out.printf("(%d, %d)\n", migrateServerOperation.vmID, migrateServerOperation.serverInstanceID);
+                output.append(")\n");
         }
         for (Operation serverOperation : distributeServerOperationsDaily) {
             DistributeServerOperation distributeServerOperation = (DistributeServerOperation) serverOperation;
+            output.append("(");
+            output.append(distributeServerOperation.serverInstance.getID());
             if (distributeServerOperation.Node == 0)
-                System.out.printf("(%d, %s)\n", distributeServerOperation.serverInstance.getID(), "A");
+                output.append(", A)\n");
             else if (distributeServerOperation.Node == 1)
-                System.out.printf("(%d, %s)\n", distributeServerOperation.serverInstance.getID(), "B");
+                output.append(", B)\n");
             else
-                System.out.printf("(%d)\n", distributeServerOperation.serverInstance.getID());
+                output.append(")\n");
         }
+        System.out.print(output);
     }
 }
