@@ -157,7 +157,7 @@ public class Main {
                                 }
                             }
                         }
-                        // 虚拟机需要资源极多，分配失败，进行新一轮分配，去掉限制
+                        // 虚拟机需要资源极多，购买失败，进行新一轮购买，去掉限制
                         if (!distributed) {
                             for (Server server : serverList) {
                                 if (server.isEnoughDual(vmNeeded.getCore(), vmNeeded.getMemory())) {
@@ -432,7 +432,7 @@ public class Main {
                                 }
                             }
                         }
-                        // 虚拟机需要资源极多，分配失败，进行新一轮分配，去掉限制
+                        // 虚拟机需要资源极多，购买失败，进行新一轮购买，去掉限制
                         if (!distributed) {
                             for (Server server : serverList) {
                                 if (server.isEnoughDual(vmNeeded.getCore(), vmNeeded.getMemory())) {
