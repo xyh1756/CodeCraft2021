@@ -4,13 +4,19 @@ import com.huawei.java.model.ServerInstance;
 import com.huawei.java.model.VMInstance;
 
 public class DistributeServerOperation implements Operation{
-    public final VMInstance vmInstance;
+    public final int vmID;
     public final ServerInstance serverInstance;
     public final int Node;
+    public final int number;
 
-    public DistributeServerOperation(VMInstance vmInstance, ServerInstance serverInstance, int node) {
-        this.vmInstance = vmInstance;
+    public DistributeServerOperation(int vmID, ServerInstance serverInstance, int node, int number) {
+        this.vmID = vmID;
         this.serverInstance = serverInstance;
         Node = node;
+        this.number = number;
+    }
+
+    public int getNumber() {
+        return number;
     }
 }

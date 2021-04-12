@@ -34,4 +34,8 @@ public class VMInstance {
     public void setNode(int node) {
         Node = node;
     }
+
+    public int getResource() {
+        return vmType.getCore() + vmType.getMemory();
+    }
 }

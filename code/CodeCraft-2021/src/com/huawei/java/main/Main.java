@@ -12,31 +12,34 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        long startTime=System.currentTimeMillis();
         // 加载输入数据
         FileUtil file = new FileUtil("code/CodeCraft-2021/data/training-1.txt");
         List<Server> serverList = file.getServerList();
-        Collections.sort(serverList);
         Map<String, VM> vms = file.getVms();
         List<List<Operation>> VMOperations = file.getOperations();
         List<ServerInstance> serverInstanceList = new ArrayList<>(10000);
         List<VMInstance> vmInstanceList = new ArrayList<>(30000);
-//        List<List<Operation>> serverOperations = new ArrayList<>();
         List<List<Operation>> buyServerOperations = new ArrayList<>(1600);
         List<List<Operation>> distributeServerOperations = new ArrayList<>(1600);
         List<List<Operation>> migrateServerOperations = new ArrayList<>(1600);
-//        List<List<Operation>> deleteVMOperations = new ArrayList<>();
         int buyServerAmount = 0;
 
         // 执行虚拟机创建、删除操作
-        for (List<Operation> vmOperationsDaily : VMOperations) {
+        for (int day = 0; day < VMOperations.size(); day++) {
+            List<Operation> vmOperationsDaily = VMOperations.get(day);
+            int _day = day;
+            serverList.sort(((o1, o2) -> (o1.getHardwareCost() - o2.getHardwareCost()) * 7 / 10 + (VMOperations.size() - _day) * (o1.getEnergyCost() - o2.getEnergyCost())));
             List<Operation> serverOperationsDaily = new ArrayList<>();
-//            List<Operation> deleteVMOperationsDaily = new ArrayList<>();
             List<Operation> migrateServerOperationsDaily = new ArrayList<>();
             List<ServerInstance> serverInstanceListVMPriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余虚拟机占用资源升序
-            List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余资源升序
+            List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(); // 按照服务器实例剩余资源升序
+            for (ServerInstance serverInstance : serverInstanceList) {
+                if (serverInstance.getTotalResource() * 17 > serverInstance.getServerType().getCore() + serverInstance.getServerType().getMemory())
+                    serverInstanceListResourcePriority.add(serverInstance);
+            }
             serverInstanceListResourcePriority.sort(Comparator.comparingInt(ServerInstance::getTotalResource));
-            Collections.sort(serverInstanceListVMPriority);
+            serverInstanceListVMPriority.sort(Comparator.comparingInt(ServerInstance::getTotalResource).reversed());
+
 
 
             // 迁移虚拟机
@@ -80,16 +83,30 @@ public class Main {
                     }
                     if (!migrated) break;
                 }
-                if (migrateAmount % 10 == 2) {
+                if (migrateAmount % 3 == 2) {
                     serverInstanceListResourcePriority.sort(Comparator.comparingInt(ServerInstance::getTotalResource));
+                }
+            }
+
+            // 虚拟机操作分段排序
+            int lastDelete = -1;
+            for (int i = 0; i < vmOperationsDaily.size(); i++) {
+                if (((VMOperation) vmOperationsDaily.get(i)).type.equals("del")) {
+                    if (i == 0) {
+                        lastDelete = 0;
+                        continue;
+                    }
+                    vmOperationsDaily.subList(lastDelete + 1, i).sort((o1, o2) -> {
+                        VM vm1 = vms.get(((VMOperation) o1).VMType);
+                        VM vm2 = vms.get(((VMOperation) o2).VMType);
+                        return vm2.getCore() + vm2.getMemory() - vm1.getCore() - vm1.getMemory();
+                    });
+                    lastDelete = i;
                 }
             }
 
             for (Operation operation : vmOperationsDaily) {
                 VMOperation vmoperation = (VMOperation) operation;
-
-                // 每个建立虚拟机操作之前排序
-                serverInstanceList.sort(Comparator.comparingInt(ServerInstance::getTotalResource));
 
                 // 建立虚拟机
                 if (vmoperation.type.equals("add")) {
@@ -97,16 +114,34 @@ public class Main {
                     VM vmNeeded = vms.get(vmoperation.VMType);
                     // 双节点虚拟机
                     if (vmNeeded.isDual()) {
+                        // 分配之前按照剩余总资源排序
+                        serverInstanceList.sort(Comparator.comparingInt(ServerInstance::getTotalResource));
+
                         for (ServerInstance serverInstance : serverInstanceList) {
-                            if (serverInstance.distributeDual(vmNeeded.getCore(), vmNeeded.getMemory())) {
+                            if (!(serverInstance.getALeftCore() + serverInstance.getBLeftCore() - vmNeeded.getCore() > 100 && serverInstance.getALeftMemory() + serverInstance.getBLeftMemory() - vmNeeded.getMemory() <= 30) &&
+                                    serverInstance.distributeDual(vmNeeded.getCore(), vmNeeded.getMemory())) {
                                 VMInstance vmInstance = new VMInstance(vmNeeded, vmoperation.ID);
                                 serverInstance.addVmInstance(vmInstance);
                                 vmInstance.setServerInstance(serverInstance);
                                 vmInstance.setNode(2);
-                                serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 2));
+                                serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 2, vmoperation.number));
                                 vmInstanceList.add(vmInstance);
                                 distributed = true;
                                 break;
+                            }
+                        }
+                        if (!distributed) {
+                            for (ServerInstance serverInstance : serverInstanceList) {
+                                if (serverInstance.distributeDual(vmNeeded.getCore(), vmNeeded.getMemory())) {
+                                    VMInstance vmInstance = new VMInstance(vmNeeded, vmoperation.ID);
+                                    serverInstance.addVmInstance(vmInstance);
+                                    vmInstance.setServerInstance(serverInstance);
+                                    vmInstance.setNode(2);
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 2, vmoperation.number));
+                                    vmInstanceList.add(vmInstance);
+                                    distributed = true;
+                                    break;
+                                }
                             }
                         }
                         // 当前服务器资源不足，购买新服务器
@@ -123,14 +158,14 @@ public class Main {
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(2);
                                     serverOperationsDaily.add(new BuyServerOperation(server, 1, serverInstance));
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 2));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 2, vmoperation.number));
                                     vmInstanceList.add(vmInstance);
                                     distributed = true;
                                     break;
                                 }
                             }
                         }
-                        // 虚拟机需要资源极多，分配失败，进行新一轮分配，去掉限制
+                        // 虚拟机需要资源极多，购买失败，进行新一轮购买，去掉限制
                         if (!distributed) {
                             for (Server server : serverList) {
                                 if (server.isEnoughDual(vmNeeded.getCore(), vmNeeded.getMemory())) {
@@ -142,7 +177,7 @@ public class Main {
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(2);
                                     serverOperationsDaily.add(new BuyServerOperation(server, 1, serverInstance));
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 2));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 2, vmoperation.number));
                                     vmInstanceList.add(vmInstance);
                                     break;
                                 }
@@ -151,6 +186,9 @@ public class Main {
                     }
                     // 单节点虚拟机
                     else {
+                        // 分配之前按照单节点最高剩余资源排序
+                        serverInstanceList.sort(Comparator.comparingInt(ServerInstance::getSingleMaxResource));
+
                         for (ServerInstance serverInstance : serverInstanceList) {
                             if (!(serverInstance.getALeftCore() - vmNeeded.getCore() > 62 && serverInstance.getALeftMemory() - vmNeeded.getMemory() <= 19) &&
                                     serverInstance.distributeA(vmNeeded.getCore(), vmNeeded.getMemory())) {
@@ -158,7 +196,7 @@ public class Main {
                                 serverInstance.addVmInstance(vmInstance);
                                 vmInstance.setServerInstance(serverInstance);
                                 vmInstance.setNode(0);
-                                serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 0));
+                                serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 0, vmoperation.number));
                                 vmInstanceList.add(vmInstance);
                                 distributed = true;
                                 break;
@@ -167,7 +205,7 @@ public class Main {
                                 serverInstance.addVmInstance(vmInstance);
                                 vmInstance.setServerInstance(serverInstance);
                                 vmInstance.setNode(1);
-                                serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 1));
+                                serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 1, vmoperation.number));
                                 vmInstanceList.add(vmInstance);
                                 distributed = true;
                                 break;
@@ -180,7 +218,7 @@ public class Main {
                                     serverInstance.addVmInstance(vmInstance);
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(0);
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 0));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 0, vmoperation.number));
                                     vmInstanceList.add(vmInstance);
                                     distributed = true;
                                     break;
@@ -189,7 +227,7 @@ public class Main {
                                     serverInstance.addVmInstance(vmInstance);
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(1);
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 1));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 1, vmoperation.number));
                                     vmInstanceList.add(vmInstance);
                                     distributed = true;
                                     break;
@@ -210,7 +248,7 @@ public class Main {
                                     vmInstance.setServerInstance(serverInstance);
                                     vmInstance.setNode(0);
                                     serverOperationsDaily.add(new BuyServerOperation(server, 1, serverInstance));
-                                    serverOperationsDaily.add(new DistributeServerOperation(vmInstance, serverInstance, 0));
+                                    serverOperationsDaily.add(new DistributeServerOperation(vmoperation.ID, serverInstance, 0, vmoperation.number));
                                     vmInstanceList.add(vmInstance);
                                     break;
                                 }
@@ -231,12 +269,10 @@ public class Main {
                 }
             }
             // 整理serverOperationsDaily，分配ID
-//            List<Operation> buyServerOperationsDaily = new ArrayList<>();
             List<Operation> distributeServerOperationDaily = new ArrayList<>();
             List<Operation> buyServerOperationsGeneralize = new ArrayList<>();
             for (Operation serverOperation : serverOperationsDaily) {
                 if (serverOperation instanceof BuyServerOperation) {
-//                    buyServerOperationsDaily.add(serverOperation);
                     boolean added = false;
                     for (Operation operation : buyServerOperationsGeneralize) {
                         BuyServerOperation buyServerOperation = (BuyServerOperation) operation;
@@ -263,11 +299,10 @@ public class Main {
                 }
             }
 
+            distributeServerOperationDaily.sort(Comparator.comparingInt(o -> ((DistributeServerOperation) o).getNumber()));
             migrateServerOperations.add(migrateServerOperationsDaily);
-//            serverOperations.add(serverOperationsDaily);
             buyServerOperations.add(buyServerOperationsGeneralize);
             distributeServerOperations.add(distributeServerOperationDaily);
-//            deleteVMOperations.add(deleteVMOperationsDaily);
         }
         // 输出结果
         try {
@@ -278,7 +313,5 @@ public class Main {
         }
 
         System.out.flush();
-        long endTime=System.currentTimeMillis(); //获取结束时间
-        System.out.println("程序运行时间： "+(endTime-startTime)+"ms");
     }
 }

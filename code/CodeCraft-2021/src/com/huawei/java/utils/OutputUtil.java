@@ -22,36 +22,44 @@ public class OutputUtil {
         this.distributeServerOperations = distributeServerOperations;
         this.migrateServerOperations = migrateServerOperations;
         this.fileName = fileName;
+        try {
+//            this.printStream = new PrintStream(new BufferedOutputStream(new FileOutputStream(fileName)), true);
+//            System.setOut(this.printStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public void OutPut() throws FileNotFoundException {
-//        PrintStream ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(fileName)), true);
-//        System.setOut(ps);
+    public void OutPut() {
+        StringBuilder output = new StringBuilder();
         for (int i = 0; i < buyServerOperations.size(); i++) {
-            System.out.printf("(purchase, %d)\n", buyServerOperations.get(i).size());
+            output.append("(purchase, ").append(buyServerOperations.get(i).size()).append(")\n");
             for (Operation serverOperation : buyServerOperations.get(i)) {
                 BuyServerOperation buyServerOperation = (BuyServerOperation) serverOperation;
-                System.out.printf("(%s, %d)\n", buyServerOperation.ServerType.getType(), buyServerOperation.number);
+                output.append("(").append(buyServerOperation.ServerType.getType()).append(", ").append(buyServerOperation.number).append(")\n");
             }
-            System.out.printf("(migration, %d)\n", migrateServerOperations.get(i).size());
+            output.append("(migration, ").append(migrateServerOperations.get(i).size()).append(")\n");
             for (Operation serverOperation : migrateServerOperations.get(i)) {
                 MigrateServerOperation migrateServerOperation = (MigrateServerOperation) serverOperation;
+                output.append("(").append(migrateServerOperation.vmID).append(", ").append(migrateServerOperation.serverInstanceID);
                 if (migrateServerOperation.Node == 0)
-                    System.out.printf("(%d, %d, %s)\n", migrateServerOperation.vmID, migrateServerOperation.serverInstanceID, "A");
+                    output.append(", A)\n");
                 else if (migrateServerOperation.Node == 1)
-                    System.out.printf("(%d, %d, %s)\n", migrateServerOperation.vmID, migrateServerOperation.serverInstanceID, "B");
+                    output.append(", B)\n");
                 else
-                    System.out.printf("(%d, %d)\n", migrateServerOperation.vmID, migrateServerOperation.serverInstanceID);
+                    output.append(")\n");
             }
             for (Operation serverOperation : distributeServerOperations.get(i)) {
                 DistributeServerOperation distributeServerOperation = (DistributeServerOperation) serverOperation;
+                output.append("(").append(distributeServerOperation.serverInstance.getID());
                 if (distributeServerOperation.Node == 0)
-                    System.out.printf("(%d, %s)\n", distributeServerOperation.serverInstance.getID(), "A");
+                    output.append(", A)\n");
                 else if (distributeServerOperation.Node == 1)
-                    System.out.printf("(%d, %s)\n", distributeServerOperation.serverInstance.getID(), "B");
+                    output.append(", B)\n");
                 else
-                    System.out.printf("(%d)\n", distributeServerOperation.serverInstance.getID());
+                    output.append(")\n");
             }
         }
+        System.out.print(output);
     }
 }
