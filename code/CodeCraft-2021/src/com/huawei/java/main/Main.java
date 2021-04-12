@@ -22,11 +22,9 @@ public class Main {
         List<List<Operation>> VMOperations = file.getOperations();
         List<ServerInstance> serverInstanceList = new ArrayList<>(8000);
         List<VMInstance> vmInstanceList = new ArrayList<>(25000);
-//        List<List<Operation>> serverOperations = new ArrayList<>();
         List<List<Operation>> buyServerOperations = new ArrayList<>();
         List<List<Operation>> distributeServerOperations = new ArrayList<>();
         List<List<Operation>> migrateServerOperations = new ArrayList<>();
-//        List<List<Operation>> deleteVMOperations = new ArrayList<>();
         int buyServerAmount = 0;
 
         // 执行虚拟机创建、删除操作
@@ -35,10 +33,8 @@ public class Main {
             serverList.sort(((o1, o2) -> (o1.getHardwareCost() - o2.getHardwareCost()) * 7 / 10 + (leftDays + K - finalReadDays) * (o1.getEnergyCost() - o2.getEnergyCost())));
             List<Operation> vmOperationsDaily = VMOperations.get(readDays);
             List<Operation> serverOperationsDaily = new ArrayList<>();
-//            List<Operation> deleteVMOperationsDaily = new ArrayList<>();
             List<Operation> migrateServerOperationsDaily = new ArrayList<>();
             List<ServerInstance> serverInstanceListVMPriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余虚拟机占用资源升序
-//            List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余资源升序
             List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(); // 按照服务器实例剩余资源升序
             for (ServerInstance serverInstance : serverInstanceList) {
                 if (serverInstance.getTotalResource() * 17 > serverInstance.getServerType().getCore() + serverInstance.getServerType().getMemory())
@@ -50,7 +46,7 @@ public class Main {
 
             // 迁移虚拟机
             int migrateAmount = 0;
-            int migrateAmountLimit = vmInstanceList.size() * 3 / 150;
+            int migrateAmountLimit = vmInstanceList.size() * 3 / 100;
             List<VMInstance> vmInstancesToMigrate;
             for (int i = 0; migrateAmount < migrateAmountLimit && i < serverInstanceListVMPriority.size(); i++) {
                 vmInstancesToMigrate = new ArrayList<>(serverInstanceListVMPriority.get(i).getVmInstances());
@@ -90,7 +86,7 @@ public class Main {
                     }
                     if (!migrated) break;
                 }
-                if (migrateAmount % 10 == 2) {
+                if (migrateAmount % 3 == 2) {
                     serverInstanceListResourcePriority.sort(Comparator.comparingInt(ServerInstance::getTotalResource));
                 }
             }
@@ -281,7 +277,6 @@ public class Main {
             List<Operation> buyServerOperationsGeneralize = new ArrayList<>();
             for (Operation serverOperation : serverOperationsDaily) {
                 if (serverOperation instanceof BuyServerOperation) {
-//                    buyServerOperationsDaily.add(serverOperation);
                     boolean added = false;
                     for (Operation operation : buyServerOperationsGeneralize) {
                         BuyServerOperation buyServerOperation = (BuyServerOperation) operation;
@@ -310,10 +305,8 @@ public class Main {
 
             distributeServerOperationDaily.sort(Comparator.comparingInt(o -> ((DistributeServerOperation) o).getNumber()));
             migrateServerOperations.add(migrateServerOperationsDaily);
-//            serverOperations.add(serverOperationsDaily);
             buyServerOperations.add(buyServerOperationsGeneralize);
             distributeServerOperations.add(distributeServerOperationDaily);
-//            deleteVMOperations.add(deleteVMOperationsDaily);
         }
         // 输出第一部分结果
         OutputUtil outputUtil = new OutputUtil(buyServerOperations, distributeServerOperations, migrateServerOperations, "code/CodeCraft-2021/data/output.txt");
@@ -328,7 +321,6 @@ public class Main {
             List<Operation> serverOperationsDaily = new ArrayList<>();
             List<Operation> migrateServerOperationsDaily = new ArrayList<>();
             List<ServerInstance> serverInstanceListVMPriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余虚拟机占用资源升序
-//            List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(serverInstanceList); // 按照服务器实例剩余资源升序
             List<ServerInstance> serverInstanceListResourcePriority = new ArrayList<>(); // 按照服务器实例剩余资源升序
             for (ServerInstance serverInstance : serverInstanceList) {
                 if (serverInstance.getTotalResource() * 17 > serverInstance.getServerType().getCore() + serverInstance.getServerType().getMemory())
@@ -340,7 +332,7 @@ public class Main {
 
             // 迁移虚拟机
             int migrateAmount = 0;
-            int migrateAmountLimit = vmInstanceList.size() * 3 / 130;
+            int migrateAmountLimit = vmInstanceList.size() * 3 / 100;
             List<VMInstance> vmInstancesToMigrate;
             for (int i = 0; migrateAmount < migrateAmountLimit && i < serverInstanceListVMPriority.size(); i++) {
                 vmInstancesToMigrate = new ArrayList<>(serverInstanceListVMPriority.get(i).getVmInstances());
@@ -381,7 +373,7 @@ public class Main {
                     }
                     if (!migrated) break;
                 }
-                if (migrateAmount % 10 == 2) {
+                if (migrateAmount % 3 == 2) {
                     serverInstanceListResourcePriority.sort(Comparator.comparingInt(ServerInstance::getTotalResource));
                 }
             }
@@ -567,12 +559,10 @@ public class Main {
                 }
             }
             // 整理serverOperationsDaily，分配ID
-//            List<Operation> buyServerOperationsDaily = new ArrayList<>();
             List<Operation> distributeServerOperationDaily = new ArrayList<>();
             List<Operation> buyServerOperationsGeneralize = new ArrayList<>();
             for (Operation serverOperation : serverOperationsDaily) {
                 if (serverOperation instanceof BuyServerOperation) {
-//                    buyServerOperationsDaily.add(serverOperation);
                     boolean added = false;
                     for (Operation operation : buyServerOperationsGeneralize) {
                         BuyServerOperation buyServerOperation = (BuyServerOperation) operation;
